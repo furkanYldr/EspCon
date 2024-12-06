@@ -31,6 +31,10 @@ int logicManager = 1;
 bool hasTouched = false;
 
 void setup() {
+
+  pinMode(15, OUTPUT);
+  digitalWrite(15, 1);
+
   Serial.begin(9600);
   pinMode(jumpButton, INPUT_PULLUP);
   tft.init();
@@ -42,8 +46,6 @@ void setup() {
   img.setTextDatum(4);
   img.setTextColor(TFT_WHITE, TFT_BLACK);
 
-  pinMode(15, OUTPUT);
-  digitalWrite(15, 1);
 
   img.pushSprite(0, 0);
 }
@@ -56,7 +58,7 @@ void drawInit() {
 
   if (y + 3 < ground) {
     img.fillCircle(ballX, y, 5, 0xFFF9);
-     
+
   } else {
     img.fillCircle(ballX, y, 5, TFT_RED);
     logicManager = 3;
@@ -130,24 +132,19 @@ void collisionDetections() {
 void restart() {
 
 
-  Serial.println("restart() çağrıldı!");
+  logicManager = 2;
 
-    Serial.println("Butona basıldı, oyunu sıfırlıyorum.");
-    logicManager = 2;
-
-    x = 100;
-    z = 195;
-    y = 100;
-    ground = 200;
-    gapPos1 = 70;
-    gapPos2 = 100;
-    gravity = 55;
-    ballX = 55;
-    currentCollumn = 1;
-    score = 0;
-    hasTouched = false;
-  
- 
+  x = 100;
+  z = 195;
+  y = 100;
+  ground = 200;
+  gapPos1 = 70;
+  gapPos2 = 100;
+  gravity = 55;
+  ballX = 55;
+  currentCollumn = 1;
+  score = 0;
+  hasTouched = false;
 }
 void Score() {
 
@@ -182,37 +179,27 @@ void startGame() {
   img.setTextDatum(4);
   img.setTextColor(0xEC84);  //0xEC84
   img.print(String(" FLAPPY BALL"));
-  img.setCursor(140, 95);
+  img.setCursor(125, 95);
   img.setTextSize(1);
   img.print("By FYldrr");
-  img.fillRect(60, 200, 70, 20, 0xFE80);
-  img.setCursor(60, 200);
 }
 
 void loop() {
 
   buttonState = digitalRead(jumpButton);
 
-  if (logicManager == 1) {
 
-    if (buttonState == LOW && lastButtonState == HIGH) {
 
+
+  if (buttonState == LOW && lastButtonState == HIGH) {  // Buton durumunu kontrol et
+    if (logicManager == 1) {
       logicManager = 2;
     } else if (logicManager == 2) {
-
-
+      velocity = -5;
     } else if (logicManager == 3) {
-      if (buttonState == LOW && lastButtonState == HIGH) {
-        restart();
-      }
+      restart();
     }
   }
-  if (buttonState == LOW && lastButtonState == HIGH) {
-    velocity = -6;
-  }
-
-
-
 
   lastButtonState = buttonState;
 
