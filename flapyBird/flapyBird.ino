@@ -103,10 +103,6 @@ void GameOver(boolean n) {
     img.setTextSize(2);
     img.print(" GAME OVER ");
 
-    img.fillRect(60, 200, 70, 20, 0xFE80);
-    img.setCursor(20, 160);
-    img.setTextSize(2);
-    img.print(" TRY AGAIN ");
   }
 }
 
@@ -133,7 +129,7 @@ void restart() {
 
 
   logicManager = 2;
-
+  velocity = 0;
   x = 100;
   z = 195;
   y = 100;
@@ -174,12 +170,12 @@ void Score() {
 
 void startGame() {
 
-  img.setCursor(8, 70);
+  img.setCursor(10, 72);
   img.setTextSize(2);
   img.setTextDatum(4);
   img.setTextColor(0xEC84);  //0xEC84
   img.print(String(" FLAPPY BALL"));
-  img.setCursor(125, 95);
+  img.setCursor(100, 95);
   img.setTextSize(1);
   img.print("By FYldrr");
 }
@@ -191,7 +187,7 @@ void loop() {
 
 
 
-  if (buttonState == LOW && lastButtonState == HIGH) {  // Buton durumunu kontrol et
+  if (buttonState == LOW && lastButtonState == HIGH) {  
     if (logicManager == 1) {
       logicManager = 2;
     } else if (logicManager == 2) {
@@ -208,17 +204,16 @@ void loop() {
   if (currentMillis - previousMillis >= interval) {
     previousMillis = currentMillis;
 
-    if (logicManager == 2) {
+     if (logicManager == 2) {
       if (hasTouched == false) {
         x -= collumnSpeed;
         z -= collumnSpeed;
         velocity += gravity * 0.01;
         y += velocity;
       } else {
-        velocity = 0;
         y = ground - 3;
-      }
-    }
+      }}
+   
     drawInit();
     Serial.println(logicManager);
   }
