@@ -12,12 +12,13 @@ int lastButtonState = HIGH;
 int buttonState = HIGH;
 
 unsigned long previousMillis = 0;
-const unsigned long interval = 50;
+const unsigned long interval = 30;
 float elapsedTime = 0;
 
 
 
-
+  const int SCREEN_WIDTH = 172;
+  const int SCREEN_HEIGHT = 320;
 int top = 40;
 int ground = 290;
 int gravity = 20;
@@ -42,7 +43,12 @@ struct sBall {
 
   int id;
 };
-
+struct pocket {
+  int pocketx;
+  int pockety;
+  int pradius;
+  int pocketId;
+};
 struct sLineSegment {
   float sx, sy;
   float ex, ey;
@@ -51,6 +57,7 @@ struct sLineSegment {
 
 vector<sLineSegment> vecLines;
 vector<sBall> vecBalls;
+vector<pocket> vecPocket;
 vector<sBall *> vecFakeBalls;
 vector<pair<sBall *, sBall *>> vecCollidingPairs;
 
@@ -63,8 +70,18 @@ void addLine(float x1, float y1, float x2, float y2) {
 
   vecLines.emplace_back(l);
 }
-void addBall(float x, float y, float r, unsigned int color) {
+void addPocket(int x, int y){
+ pocket p;
+
+  p.pocketx = x;
+  p.pockety = y;
+  p.pradius = 7;
+  vecPocket.emplace_back(p);
+
+}
+  void addBall(float x, float y, float r, unsigned int color) {
   sBall b;
+
   b.px = x;
   b.py = y;
   b.vx = 0;
@@ -77,6 +94,7 @@ void addBall(float x, float y, float r, unsigned int color) {
   b.mass = r * 10.0f;
   b.id = vecBalls.size();
   vecBalls.emplace_back(b);
+
 };
 
 void setup() {
@@ -97,53 +115,63 @@ void setup() {
 
 
   img.pushSprite(0, 0);
-  const int SCREEN_WIDTH = 172;
-  const int SCREEN_HEIGHT = 320;
-  addBall(85, 20, 5, 0xFFFF );
+
+  addBall(85, 20, 5, 0xFFFF);
 
 
-addBall(85, 225, 5, 0xB8A1); // 1. Top - Kırmızı
-addBall(90, 235, 5, 0x4AA4); // 2. Top - Yeşil
-addBall(80, 235, 5, 0x018C); // 3. Top - Mavi
-addBall(95, 245, 5, 0xFEE0); // 4. Top - Sarı
-addBall(85, 245, 5, 0x714C); // 5. Top - Mor
-addBall(75, 245, 5, 0xAEDE); // 6. Top - Turkuaz
-addBall(100, 255, 5, 0xFC60); // 7. Top - Turuncu
-addBall(90, 255, 5, 0x0000); // 8. Top - Siyah
-addBall(80, 255, 5, 0xFFF8); // 9. Top - Beyaz
-addBall(70, 255, 5, 0xD105); // 10. Top - Bordo
-addBall(105, 265, 5, 0x4AEA); // 11. Top - Koyu Yeşil
-addBall(95, 265, 5, 0xA615); // 12. Top - Lacivert
-addBall(85, 265, 5, 0xD72A); // 13. Top - Zeytin Yeşili
-addBall(75, 265, 5, 0xCE5F); // 14. Top - Menekşe
-addBall(65, 265, 5, 0xB5F6); // 15. Top - Gri
+  addBall(85, 225, 5, 0xB8A1);   // 1. Top - Kırmızı
+  addBall(90, 235, 5, 0x4AA4);   // 2. Top - Yeşil
+  addBall(80, 235, 5, 0x018C);   // 3. Top - Mavi
+  addBall(95, 245, 5, 0xFEE0);   // 4. Top - Sarı
+  addBall(85, 245, 5, 0x714C);   // 5. Top - Mor
+  addBall(75, 245, 5, 0xAEDE);   // 6. Top - Turkuaz
+  addBall(100, 255, 5, 0xFC60);  // 7. Top - Turuncu
+  addBall(90, 255, 5, 0x0000);   // 8. Top - Siyah
+  addBall(80, 255, 5, 0xFFF8);   // 9. Top - Beyaz
+  addBall(70, 255, 5, 0xD105);   // 10. Top - Bordo
+  addBall(105, 265, 5, 0x4AEA);  // 11. Top - Koyu Yeşil
+  addBall(95, 265, 5, 0xA615);   // 12. Top - Lacivert
+  addBall(85, 265, 5, 0xD72A);   // 13. Top - Zeytin Yeşili
+  addBall(75, 265, 5, 0xCE5F);   // 14. Top - Menekşe
+  addBall(65, 265, 5, 0xB5F6);   // 15. Top - Gri
 
 
+  addLine(10, 10, 10, 139);
+  addLine(160, 10, 160, 139);
 
+  addLine(17, 10, 153, 10);
+  addLine(17, 310, 153, 310);
 
+  addLine(10, 155, 10,303);
+  addLine( 160, 155, 160, 303);
 
-
-
-  addLine(0, 0, 0, 320);
-  addLine(170, 0, 170, 320);
-  addLine(0, 320, 170, 320);
-   addLine(0, 0, 170, 0);
-
-
- // vecBalls[0].vy = 500;
- // vecBalls[0].vx = 400;
+  addPocket(5,5);
+    addPocket(165,5);
+      addPocket(3,160);
+        addPocket(5,315);
+          addPocket(167,160);
+            addPocket(165,315);
+            
+  // vecBalls[0].vy = 500;
+  // vecBalls[0].vx = 400;
 }
 
 void drawInit() {
   img.fillSprite(0x04CC);
 
+
+
+  // img.drawFastHLine(0, top, 172, TFT_SILVER);
   
- // img.drawFastHLine(0, top, 172, TFT_SILVER);
+  img.fillRect(0, 0, 170, 10, 0x5944);
+  img.fillRect(0, 310, 170, 10, 0x5944);
+  img.fillRect(0, 10, 10, 300, 0x5944);
+  img.fillRect(160, 10, 10, 300, 0x5944);
+    for (auto pocket : vecPocket) {
+  img.fillCircle(pocket.pocketx,pocket.pockety,pocket.pradius,TFT_BLACK);
+  }
   for (auto ball : vecBalls) {
     img.fillCircle(ball.px, ball.py, ball.radius, ball.bColor);
-  }
-  for (auto line : vecLines) {
-    img.drawLine(line.sx, line.sy, line.ex, line.ey, TFT_BLACK);
   }
 
 
@@ -186,12 +214,12 @@ void collisionDetect() {
   };
 
   for (auto &ball : vecBalls) {
-    
+
     ball.ox = ball.px;
     ball.oy = ball.py;
     // Add Drag to emulate rolling friction
-    ball.ax = -ball.vx * 0.5f;						// Apply drag and gravity
-		ball.ay = -ball.vy * 0.5f ;
+    ball.ax = -ball.vx * 0.6f;  // Apply drag and gravity
+    ball.ay = -ball.vy * 0.6f;
 
     // Update ball physics
     ball.vx += ball.ax * 0.01;
@@ -199,14 +227,12 @@ void collisionDetect() {
     ball.px += ball.vx * 0.01;
     ball.py += ball.vy * 0.01;
 
-   
+
     // Clamp velocity near zero
-    	if (fabs(ball.vx*ball.vx + ball.vy*ball.vy) < fStable)
-						{
-							ball.vx = 0;
-							ball.vy = 0;
-						}
-					
+    if (fabs(ball.vx * ball.vx + ball.vy * ball.vy) < fStable) {
+      ball.vx = 0;
+      ball.vy = 0;
+    }
   }
 
   for (auto &ball : vecBalls) {
@@ -327,8 +353,8 @@ void loop() {
     if (logicManager == 1) {
       logicManager = 2;
     } else if (logicManager == 2) {
-      
-       vecBalls[0].vy = 1000;
+
+      vecBalls[0].vy = 1000;
 
     } else if (logicManager == 3) {
       // Diğer oyun mekanikleri burada işlenebilir
