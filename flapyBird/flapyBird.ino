@@ -1,10 +1,13 @@
 #include <TFT_eSPI.h>
 #include <Wire.h>
 
+
 TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite img = TFT_eSprite(&tft);
 
-#define jumpButton 1
+#define jumpButton 10
+
+
 
 int lastButtonState = HIGH;
 int buttonState = HIGH;
@@ -31,6 +34,7 @@ int logicManager = 1;
 bool hasTouched = false;
 
 void setup() {
+
 
   pinMode(15, OUTPUT);
   digitalWrite(15, 1);
@@ -102,6 +106,7 @@ void GameOver(boolean n) {
     img.fillRect(0, 97, 170, 20, TFT_RED);
     img.setTextSize(2);
     img.print(" GAME OVER ");
+    
 
   }
 }
@@ -192,6 +197,8 @@ void loop() {
       logicManager = 2;
     } else if (logicManager == 2) {
       velocity = -5;
+       
+           
     } else if (logicManager == 3) {
       restart();
     }
