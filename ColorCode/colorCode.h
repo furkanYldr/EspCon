@@ -2,11 +2,11 @@
 #define COLORCODE_H
 
 #include <TFT_eSPI.h>
-#include "colorCode.h"
 #include <Arduino.h>
 #include "resource.h"
 #include <vector>
 #include <RotaryEncoder.h>
+
 using namespace std;
 extern int tempBlock ;
 

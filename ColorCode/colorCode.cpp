@@ -119,18 +119,28 @@ void navigation() {
   if (selectState) {
     if (menuIndex == 1) {
 
-      tab = 1;
+      tab = 3;
       Serial.print(tab);
 
     } else if (menuIndex == 2) {
       if (!isGameStarted) {
 
-        tab = 2;
+        tab = 1;
       }
     }
 
   } else if (backState) {
-    tab--;
+
+    if (tab == 3) {
+      tab = 0;
+
+    }else if(tab == 0 ){
+    tab = 20;
+ 
+    }else {
+      tab--;
+    }
+
     if (isGameStarted) {
 
       isGameStarted = false;
@@ -146,13 +156,13 @@ void navigation() {
       Menu();
       break;
     case 1:
-
-      break;
-    case 2:
       Series();
       break;
-    case 3:
+    case 2:
       levelScreen(level + 1);
+      break;
+    case 3:
+
       break;
     default:
 
@@ -192,7 +202,7 @@ void levelScreen(int index) {
 
     prevEncoderPos = newEncoderPos;
   }
- 
+
   correctOrderCount(control, index);
 }
 
@@ -240,7 +250,7 @@ void Series() {
 
       seriesLevel(level + 1);
 
-      tab = 3;
+      tab = 2;
       isGameStarted = true;
     }
   }
