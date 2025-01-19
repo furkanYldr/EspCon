@@ -7,8 +7,8 @@
 
 #define MATRIX_COLS 29
 #define MATRIX_ROWS 32
-#define coin_collums 26
-#define coin_rows 29
+#define coin_collums 28
+#define coin_rows 31
 // back 12 pause 1 select 10 
 // button definition
 #define up_btn 11

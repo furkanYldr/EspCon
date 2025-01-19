@@ -1,3 +1,4 @@
+#include <cmath>
 
 #include <TFT_eSPI.h>
 #include "pacman.h"
@@ -19,7 +20,7 @@ int animCounter = 0;
 
 vector<sGhost> vecGhosts;
 
-structPac pacman = { 81, 159, false, false, true, true, true };
+structPac pacman = { 81, 159, 0, 0, false, false, true, true, true, PEMPTY };
 
 void addGhost(int col) {
 
@@ -82,8 +83,8 @@ void drawMaze(int n, int m) {
   for (int row = 0; row < coin_rows; row++) {
     for (int col = 0; col < coin_collums; col++) {
 
-      x = col * CELL_SIZE + 9;
-      y = row * CELL_SIZE + 32;
+      x = col * CELL_SIZE + 3;
+      y = row * CELL_SIZE + 26;
       if (coin_matrix[row][col] == 1) {
         img.drawPixel(x, y, pacmanColor);
 
@@ -99,9 +100,9 @@ void drawMaze(int n, int m) {
 
 void drawPacman(int dx, int dy) {
   canMove();
-  img.fillRect(pacman.px, pacman.py + 1, 10, 9, COLOR_0);
-  pacman.px += dx;
-  pacman.py += dy;
+  img.fillRect(pacman.px , pacman.py + 1, 10, 9, COLOR_0);
+  pacman.px += pacman.pvx;
+  pacman.py += pacman.pvy;
   for (int row = 0; row < 10; row++) {
     for (int col = 0; col < 10; col++) {
 
@@ -123,6 +124,10 @@ void drawPacman(int dx, int dy) {
     }
   }
 }
+
+
+
+
 void drawGhost() {
   for (auto &ghostS : vecGhosts) {
     for (int row = 0; row < 10; row++) {
@@ -149,106 +154,130 @@ void drawGhost() {
 void canMove() {
 
   int centerx = pacman.px + 5;
-  int centery = pacman.py + 6;
+  int centery = pacman.py +6;
 
-  int row = (centery - 30) / CELL_SIZE;
-  int col = (centerx - 6) / CELL_SIZE;
+  int row = round((centery - 26) / CELL_SIZE);
+  int col = round((centerx - 3) / CELL_SIZE);
+  
+  pacman.up = (row >= 1 && coin_matrix[row -1][col] != 0);
+  pacman.down = (row < coin_rows  && coin_matrix[row + 1][col] != 0);
+  pacman.front = (col < coin_collums  && coin_matrix[row][col + 1] != 0);
+  pacman.back = (col >= 1  && coin_matrix[row][col - 1] != 0);
 
-  pacman.up = (row > 0 && coin_matrix[row - 1][col] != 0);
-  pacman.down = (row < coin_rows - 1 && coin_matrix[row + 1][col] != 0);
-  pacman.front = (col < coin_collums - 1 && coin_matrix[row][col + 1] != 0);
-  pacman.back = (col > 0 && coin_matrix[row][col - 1] != 0);
   pacMOVEMENT();
 }
+
+bool btnPressed = false;
+
 void pacMOVEMENT() {
 
-  int DOWN = digitalRead(dwn_btn);
-  int UP = digitalRead(up_btn);
-  int RIGHT = digitalRead(rgh_btn);
-  int LEFT = digitalRead(lft_btn);
+    int DOWN = digitalRead(dwn_btn);
+    int UP = digitalRead(up_btn);
+    int RIGHT = digitalRead(rgh_btn);
+    int LEFT = digitalRead(lft_btn);
 
-  if (UP == LOW) {
-    if (pacman.up) {
-
-      pacman.px += 0;
-      pacman.py += -2;
+    if (!btnPressed) { 
+        if (UP == LOW) {
+           pacman.wantedDirection = PUP;
+            btnPressed = true; 
+        } else if (DOWN == LOW ) {
+         pacman.wantedDirection = PDOWN;
+            btnPressed = true;
+        } else if (RIGHT == LOW ) {
+            pacman.wantedDirection = PRIGHT;
+            btnPressed = true; 
+        } else if (LEFT == LOW ) {
+           pacman.wantedDirection = PLEFT;
+            btnPressed = true;
+        }
     }
-  }
-  if (DOWN == LOW) {
-    if (pacman.down) {
+ 
+        if ( pacman.wantedDirection == PUP && pacman.up) {
+            pacman.pvx = 0;
+            pacman.pvy = -2;
+            alignToGrid();  
+            pacman.wantedDirection = PEMPTY;
+            btnPressed = true; 
+        } else if (pacman.wantedDirection == PDOWN && pacman.down) {
+            pacman.pvx = 0;
+            pacman.pvy = 2;
+            alignToGrid();  
+            pacman.wantedDirection = PEMPTY;
+            btnPressed = true;
+        } else if ( pacman.wantedDirection == PRIGHT && pacman.front) {
+            pacman.pvx = 2;
+            pacman.pvy = 0;
+            alignToGrid();  
+            pacman.wantedDirection =PEMPTY;
+            btnPressed = true; 
+        } else if ( pacman.wantedDirection == PLEFT && pacman.back) {
+            pacman.pvx = -2;
+            pacman.pvy = 0;
+            alignToGrid();
+            pacman.wantedDirection = PEMPTY;
+            btnPressed = true;
+        }
+    
 
-      pacman.px += 0;
-      pacman.py += 2;
+    // Buton bırakıldığında sıfırla
+    if (UP == HIGH && DOWN == HIGH && RIGHT == HIGH && LEFT == HIGH) {
+        btnPressed = false;
     }
-  }
 
-  if (RIGHT == LOW) {
-    if (pacman.front) {
+    if (!pacman.up && pacman.pvy == -2) pacman.pvy = 0 , pacman.py -= 4;
+    if (!pacman.down && pacman.pvy == 2) pacman.pvy = 0;
+    if (!pacman.front && pacman.pvx == 2) pacman.pvx = 0;
+    if (!pacman.back && pacman.pvx == -2) pacman.pvx = 0 ,pacman.px -= 5 ;
 
-      pacman.px += 2;
-      pacman.py += 0;
-    }
-  }
+}
 
-  if (LEFT == LOW) {
-    if (pacman.back) {
 
-      pacman.px += -2;
-      pacman.py += 0;
-    }
+
+
+
+
+void alignToGrid() {
+  int centerx = pacman.px + 5;
+  int centery = pacman.py +6;
+
+  int row = round((centery - 26) / CELL_SIZE);
+  int col = round((centerx - 3) / CELL_SIZE);
+  
+  if (pacman.pvx == 2 || pacman.pvx == -2) {
+    pacman.px = ((pacman.px - 3) / CELL_SIZE) * CELL_SIZE + 3 ;
+  } else if (pacman.pvy == 2 || pacman.pvy == -2) {
+    pacman.py = ((pacman.py - 26) / CELL_SIZE) * CELL_SIZE + 26 ;
   }
 }
 
-void pacmanSetup(){
+void pacmanSetup() {
 
+  tft.init();
+  tft.setRotation(2);
+  pinMode(15, OUTPUT);
+  digitalWrite(15, 1);
 
+  pinMode(lft_btn, INPUT_PULLUP);
+  pinMode(rgh_btn, INPUT_PULLUP);
+  pinMode(up_btn, INPUT_PULLUP);
+  pinMode(dwn_btn, INPUT_PULLUP);
 
+  tft.fillScreen(0x0130);
+  img.createSprite(172, 320);
+  img.pushSprite(0, 0);
+  addGhost(1);
+  addGhost(2);
+  addGhost(3);
+  addGhost(4);
 }
-void pacmanUpdate(){
+void pacmanUpdate() {
 
   animCounter += pacmanSpeed;
 
-    drawInit();
-    if (animCounter == 4 || animCounter > 4) {
+  drawInit();
+  if (animCounter == 4 || animCounter > 4) {
 
-      pacman.open = !pacman.open;
-      animCounter = 0;
-    }
-
+    pacman.open = !pacman.open;
+    animCounter = 0;
+  }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -20,20 +20,24 @@ void drawPacman(int dx, int dy);
 void drawGhost();
 void canMove();
 void pacMOVEMENT();
-
+void alignToGrid() ;
 
 extern TFT_eSPI tft;
 extern TFT_eSprite img;
 
-
+enum Direction { PUP, PDOWN, PLEFT, PRIGHT , PEMPTY };
 struct structPac {
   int px;
   int py;
+  int pvx;
+  int pvy;
   bool up;
   bool down;
   bool front;
   bool back;
   bool open;
+  Direction wantedDirection;
+
 };
 
 

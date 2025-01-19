@@ -17,23 +17,7 @@ const unsigned long movementInterval = 40;
 
 
 void setup() {
-  tft.init();
-  tft.setRotation(2);
-  pinMode(15, OUTPUT);
-  digitalWrite(15, 1);
-
-  pinMode(lft_btn, INPUT_PULLUP);
-  pinMode(rgh_btn, INPUT_PULLUP);
-  pinMode(up_btn, INPUT_PULLUP);
-  pinMode(dwn_btn, INPUT_PULLUP);
-
-  tft.fillScreen(0x0130);
-  img.createSprite(172, 320);
-  img.pushSprite(0, 0);
-  addGhost(1);
-  addGhost(2);
-  addGhost(3);
-  addGhost(4);
+pacmanSetup();
 }
 
 void loop() {
