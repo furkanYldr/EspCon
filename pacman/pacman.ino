@@ -10,13 +10,14 @@ using namespace std;
 
 unsigned long previousMillisMove = 0;
 
-const unsigned long movementInterval = 40;
+const unsigned long movementInterval = 20;
 
 
 
 
 
 void setup() {
+  Serial.begin(9600);
 pacmanSetup();
 }
 

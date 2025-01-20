@@ -15,12 +15,13 @@ TFT_eSprite img = TFT_eSprite(&tft);
 
 int x = 0;
 int y = 0;
+int pacmanAnim = 1;
 int pacmanSpeed = 1;
 int animCounter = 0;
 
 vector<sGhost> vecGhosts;
 
-structPac pacman = { 81, 159, 0, 0, false, false, true, true, true, PEMPTY };
+structPac pacman = { 77, 159, 0, 0, false, false, true, true, true, PEMPTY };
 
 void addGhost(int col) {
 
@@ -100,7 +101,8 @@ void drawMaze(int n, int m) {
 
 void drawPacman(int dx, int dy) {
   canMove();
-  img.fillRect(pacman.px , pacman.py + 1, 10, 9, COLOR_0);
+
+  img.fillRect(pacman.px, pacman.py + 1, 10, 9, COLOR_0);
   pacman.px += pacman.pvx;
   pacman.py += pacman.pvy;
   for (int row = 0; row < 10; row++) {
@@ -153,102 +155,137 @@ void drawGhost() {
 
 void canMove() {
 
-  int centerx = pacman.px + 5;
-  int centery = pacman.py +6;
+  int centerx = pacman.px + 4;
+  int centery = pacman.py + 5;
 
-  int row = round((centery - 26) / CELL_SIZE);
-  int col = round((centerx - 3) / CELL_SIZE);
-  
-  pacman.up = (row >= 1 && coin_matrix[row -1][col] != 0);
-  pacman.down = (row < coin_rows  && coin_matrix[row + 1][col] != 0);
-  pacman.front = (col < coin_collums  && coin_matrix[row][col + 1] != 0);
-  pacman.back = (col >= 1  && coin_matrix[row][col - 1] != 0);
+  int row = (centery - 26) / CELL_SIZE;
+  int col = (centerx - 3) / CELL_SIZE;
+  Serial.print("row: ");
+  Serial.print(row);
+  Serial.print(" ");
+  Serial.print(centery);
+  Serial.print(" ");
+  Serial.print((row * CELL_SIZE) + 26);
+  Serial.print(" ");
+  Serial.print("collumn: ");
+    Serial.print(col);
+  Serial.print(" ");
+  Serial.print(centerx);
+  Serial.print(" ");
+  Serial.println((col * CELL_SIZE) + 3);
 
-  pacMOVEMENT();
+
+  if ((centery - 26) % CELL_SIZE == 0) {
+    pacman.up = (row > 0 && coin_matrix[row - 1][col] != 0);
+
+    pacman.down = (row < coin_rows && coin_matrix[row + 1][col] != 0);
+
+
+    if (!pacman.up && pacman.pvy == -pacmanSpeed) pacman.pvy = 0;
+    if (!pacman.down && pacman.pvy == pacmanSpeed) pacman.pvy = 0;
+
+  } else {
+    pacman.up = false;
+    pacman.down = false;
+  }
+  if ((centerx - 3) % CELL_SIZE == 0) {
+    pacman.back = (col > 0 && coin_matrix[row][col - 1] != 0);
+
+    pacman.front = (col < coin_collums && coin_matrix[row][col + 1] != 0);
+
+    if (!pacman.front && pacman.pvx == pacmanSpeed) pacman.pvx = 0;
+    if (!pacman.back && pacman.pvx == -pacmanSpeed) pacman.pvx = 0;
+
+  } else {
+
+    pacman.back = false;
+    pacman.front = false;
+
+  }
+
+ pacMOVEMENT();
+ 
 }
 
 bool btnPressed = false;
 
 void pacMOVEMENT() {
 
-    int DOWN = digitalRead(dwn_btn);
-    int UP = digitalRead(up_btn);
-    int RIGHT = digitalRead(rgh_btn);
-    int LEFT = digitalRead(lft_btn);
+  int DOWN = digitalRead(dwn_btn);
+  int UP = digitalRead(up_btn);
+  int RIGHT = digitalRead(rgh_btn);
+  int LEFT = digitalRead(lft_btn);
 
-    if (!btnPressed) { 
-        if (UP == LOW) {
-           pacman.wantedDirection = PUP;
-            btnPressed = true; 
-        } else if (DOWN == LOW ) {
-         pacman.wantedDirection = PDOWN;
-            btnPressed = true;
-        } else if (RIGHT == LOW ) {
-            pacman.wantedDirection = PRIGHT;
-            btnPressed = true; 
-        } else if (LEFT == LOW ) {
-           pacman.wantedDirection = PLEFT;
-            btnPressed = true;
-        }
+  if (!btnPressed) {
+    if (UP == LOW) {
+      pacman.wantedDirection = PUP;
+      btnPressed = true;
+    } else if (DOWN == LOW) {
+      pacman.wantedDirection = PDOWN;
+      btnPressed = true;
+    } else if (RIGHT == LOW) {
+      pacman.wantedDirection = PRIGHT;
+      btnPressed = true;
+    } else if (LEFT == LOW) {
+      pacman.wantedDirection = PLEFT;
+      btnPressed = true;
     }
- 
-        if ( pacman.wantedDirection == PUP && pacman.up) {
-            pacman.pvx = 0;
-            pacman.pvy = -2;
-            alignToGrid();  
-            pacman.wantedDirection = PEMPTY;
-            btnPressed = true; 
-        } else if (pacman.wantedDirection == PDOWN && pacman.down) {
-            pacman.pvx = 0;
-            pacman.pvy = 2;
-            alignToGrid();  
-            pacman.wantedDirection = PEMPTY;
-            btnPressed = true;
-        } else if ( pacman.wantedDirection == PRIGHT && pacman.front) {
-            pacman.pvx = 2;
-            pacman.pvy = 0;
-            alignToGrid();  
-            pacman.wantedDirection =PEMPTY;
-            btnPressed = true; 
-        } else if ( pacman.wantedDirection == PLEFT && pacman.back) {
-            pacman.pvx = -2;
-            pacman.pvy = 0;
-            alignToGrid();
-            pacman.wantedDirection = PEMPTY;
-            btnPressed = true;
-        }
-    
+  }
 
-    // Buton bırakıldığında sıfırla
-    if (UP == HIGH && DOWN == HIGH && RIGHT == HIGH && LEFT == HIGH) {
-        btnPressed = false;
-    }
+ int centerx = pacman.px + 4;
+  int centery = pacman.py + 5;
 
-    if (!pacman.up && pacman.pvy == -2) pacman.pvy = 0 , pacman.py -= 4;
-    if (!pacman.down && pacman.pvy == 2) pacman.pvy = 0;
-    if (!pacman.front && pacman.pvx == 2) pacman.pvx = 0;
-    if (!pacman.back && pacman.pvx == -2) pacman.pvx = 0 ,pacman.px -= 5 ;
-
-}
-
-
-
-
-
-
-void alignToGrid() {
-  int centerx = pacman.px + 5;
-  int centery = pacman.py +6;
-
-  int row = round((centery - 26) / CELL_SIZE);
-  int col = round((centerx - 3) / CELL_SIZE);
+  int row = (centery - 26) / CELL_SIZE;
+  int col = (centerx - 3) / CELL_SIZE;
   
-  if (pacman.pvx == 2 || pacman.pvx == -2) {
-    pacman.px = ((pacman.px - 3) / CELL_SIZE) * CELL_SIZE + 3 ;
-  } else if (pacman.pvy == 2 || pacman.pvy == -2) {
-    pacman.py = ((pacman.py - 26) / CELL_SIZE) * CELL_SIZE + 26 ;
+  if ((centerx - 3) % CELL_SIZE == 0) {
+   
+  
+
+
+  if (pacman.wantedDirection == PUP && pacman.up) {
+    pacman.pvx = 0;
+    pacman.pvy = -pacmanSpeed;
+    //alignToGrid();
+    pacman.wantedDirection = PEMPTY;
+    btnPressed = true;
+  } else if (pacman.wantedDirection == PDOWN && pacman.down) {
+    pacman.pvx = 0;
+    pacman.pvy = pacmanSpeed;
+    //alignToGrid();
+    pacman.wantedDirection = PEMPTY;
+    btnPressed = true;
+  } 
+    
+  }
+  if ((centery - 26) % CELL_SIZE == 0) {
+  if (pacman.wantedDirection == PRIGHT && pacman.front) {
+    pacman.pvx = pacmanSpeed;
+    pacman.pvy = 0;
+    //alignToGrid();
+    pacman.wantedDirection = PEMPTY;
+    btnPressed = true;
+  } else if (pacman.wantedDirection == PLEFT && pacman.back) {
+    pacman.pvx = -pacmanSpeed;
+    pacman.pvy = 0;
+    // alignToGrid();
+    pacman.wantedDirection = PEMPTY;
+    btnPressed = true;
+
+  }}
+
+
+  // Buton bırakıldığında sıfırla
+  if (UP == HIGH && DOWN == HIGH && RIGHT == HIGH && LEFT == HIGH) {
+    btnPressed = false;
   }
 }
+
+
+
+
+
+
 
 void pacmanSetup() {
 
@@ -272,7 +309,7 @@ void pacmanSetup() {
 }
 void pacmanUpdate() {
 
-  animCounter += pacmanSpeed;
+  animCounter += pacmanAnim;
 
   drawInit();
   if (animCounter == 4 || animCounter > 4) {
