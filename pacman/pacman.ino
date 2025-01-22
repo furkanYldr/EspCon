@@ -10,7 +10,7 @@ using namespace std;
 
 unsigned long previousMillisMove = 0;
 
-const unsigned long movementInterval = 20;
+const unsigned long movementInterval = 10;
 
 
 

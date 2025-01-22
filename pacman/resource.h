@@ -7,7 +7,7 @@
 
 #define MATRIX_COLS 29
 #define MATRIX_ROWS 32
-#define coin_collums 28
+#define coin_collums 30
 #define coin_rows 31
 // back 12 pause 1 select 10 
 // button definition
@@ -29,7 +29,10 @@
 
 extern uint8_t coin_matrix[coin_rows][coin_collums];
 extern uint8_t bmatrix[MATRIX_ROWS][MATRIX_COLS] ;
-extern uint8_t pacman1[10][10] ;
+extern uint8_t pacmanFront[10][10] ;
+extern uint8_t pacmanBack[10][10] ;
+extern uint8_t pacmanUp[10][10] ;
+extern uint8_t pacmanDown[10][10] ;
 extern uint8_t pacman2[10][10] ;
 
 extern uint8_t ghost[10][10];

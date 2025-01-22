@@ -5,6 +5,7 @@
 #include <TFT_eSPI.h>
 #include <Arduino.h>
 #include "resource.h"
+#include "ghosts.h"
 #include <vector>
 #include <RotaryEncoder.h>
 
@@ -16,16 +17,24 @@ void pacmanUpdate();
 void addGhost(int col);
 void drawInit();
 void drawMaze(int n, int m);
-void drawPacman(int dx, int dy);
+void drawPacman(uint8_t matrix[10][10]);
 void drawGhost();
 void canMove();
 void pacMOVEMENT();
-void alignToGrid() ;
+void alignToGrid();
+void collectFood(int row , int col);
 
 extern TFT_eSPI tft;
 extern TFT_eSprite img;
-
-enum Direction { PUP, PDOWN, PLEFT, PRIGHT , PEMPTY };
+enum animDirection { AUP,
+                     ADOWN,
+                     ALEFT,
+                     ARIGHT };
+enum Direction { PUP,
+                 PDOWN,
+                 PLEFT,
+                 PRIGHT,
+                 PEMPTY };
 struct structPac {
   int px;
   int py;
@@ -37,7 +46,7 @@ struct structPac {
   bool back;
   bool open;
   Direction wantedDirection;
-
+  animDirection ANIM;
 };
 
 
