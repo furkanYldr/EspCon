@@ -1,0 +1,46 @@
+// x          y
+vector<pair<int, int>> bfs(int startX, int startY, int endX, int endY, int prow, int pcol) {
+  bool visited[coin_rows][coin_collums] = { false };
+  queue<pair<int, int>> q;
+  std::map<std::pair<int, int>, std::pair<int, int>> parent;
+
+  q.push({ startX, startY });
+  visited[startX][startY] = true;
+
+  int dx[] = { -1, 1, 0, 0 };
+  int dy[] = { 0, 0, -1, 1 };
+
+  while (!q.empty()) {
+    auto current = q.front();
+    q.pop();
+
+    if (current.first == endX && current.second == endY) {
+      vector<pair<int, int>> path;
+      pair<int, int> node = current;
+
+      while (node != make_pair(startX, startY)) {
+        path.push_back(node);
+        node = parent[node];
+      }
+      path.push_back({ startX, startY });
+      reverse(path.begin(), path.end());
+
+      return path;
+    }
+
+    for (int i = 0; i < 4; i++) {
+      int nx = current.first + dx[i];
+      int ny = current.second + dy[i];
+      if (nx == prow && ny == pcol) {
+        continue;
+      }
+      if (nx >= 0 && nx < coin_rows && ny >= 0 && ny < coin_collums && !visited[nx][ny] && coin_matrix[nx][ny] != 0) {
+        q.push({ nx, ny });
+        visited[nx][ny] = true;
+        parent[{ nx, ny }] = current;  // std::map kullanıldı
+      }
+    }
+  }
+
+  return {};
+}

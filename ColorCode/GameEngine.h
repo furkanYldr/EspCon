@@ -11,8 +11,6 @@ enum State {
   IDLE,        
   COLOR_MENU, 
   SELECT_COLOR
-  
-  
   } ;
 
 void addBlock(uint16_t col ,int i );

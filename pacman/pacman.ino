@@ -5,31 +5,18 @@ using namespace std;
 
 
 
-
-
-
-unsigned long previousMillisMove = 0;
-
-const unsigned long movementInterval = 10;
-
-
-
-
-
 void setup() {
   Serial.begin(9600);
-pacmanSetup();
+  pacmanSetup();
 }
 
 void loop() {
-  unsigned long currentMillis = millis();
+  
+  
+    pacmanUpdate();
 
 
 
 
 
-  if (currentMillis - previousMillisMove >= movementInterval) {
-    previousMillisMove = currentMillis;
-   pacmanUpdate();
-  }
 }
