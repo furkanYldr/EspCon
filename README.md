@@ -31,12 +31,16 @@ This project aims to bring a portable gaming experience powered by the **ESP32**
 The console features a simple menu with several retro games. Use the buttons to select and play the games. The console will provide basic instructions at the start of each game.
 
 ### Games
+## Game List
 
-- **Tetris**: A challenging yet fun classic.
-- **Snake**: The timeless favorite.
-- **Pong**: A simple and fun two-player game.
-
-More games are being added!
+| **Game Name**   | **Status**          | **Description**                          |
+|-----------------|---------------------|------------------------------------------|
+| Tetris          | Completed           | Classic puzzle game.                    |
+| Snake           | Completed           | The timeless snake game.                |
+| Pong            | Completed           | Simple two-player arcade game.          |
+| Space Invaders  | In Progress         | A retro space shooter, under development.|
+| Pac-Man         | Not Started         | Classic maze game, to be added soon.     |
+| Breakout        | Planned             | Brick-breaking game, will be added later.|
 
 ## Contributing
 
