@@ -33,14 +33,18 @@ The console features a simple menu with several retro games. Use the buttons to 
 ### Games
 ## Game List
 
-| **Game Name**   | **Status**          | **Description**                          |
-|-----------------|---------------------|------------------------------------------|
-| Tetris          | Completed           | Classic puzzle game.                    |
-| Snake           | Completed           | The timeless snake game.                |
-| Pong            | Completed           | Simple two-player arcade game.          |
-| Space Invaders  | In Progress         | A retro space shooter, under development.|
-| Pac-Man         | Not Started         | Classic maze game, to be added soon.     |
-| Breakout        | Planned             | Brick-breaking game, will be added later.|
+
+| **Game Name**   | **Status**              | **Description**                          |
+|-----------------|-------------------------|------------------------------------------|
+| Flappy Ball     | Completed               | Simple Flappy Bird clone.               |
+| Pac-Man         | In Progress (80%)       | Classic maze game, reverse engineered.  |
+| ColorCode       | In Progress (60%)       | Minecraft color match game port (2D).   |
+| 8pool           | Collision Complete      | 8-ball billiards simulation.            |
+| FruitMerge      | Needs Huge Optimization | Merge fruits to score points.           |
+| Space Invaders  | In Progress             | A retro space shooter, under development.|
+| Breakout        | Planned                 | Brick-breaking game, will be added later. |
+| Tetris          | Planned                 | Classic puzzle game, to be added soon.  |
+| Snake           | Planned                 | The timeless snake game.                |
 
 ## Contributing
 
