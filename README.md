@@ -1,6 +1,5 @@
 # Standalone Handheld Game Console (ESP32)
 
-This project is the design and development of a standalone game console running on the **ESP32** platform. Retro games are reverse-engineered and transferred to the platform without using any game engine. The goal is to improve game mechanics creation and algorithm analysis.
 
 ## About the Project
 
@@ -8,9 +7,9 @@ This project aims to bring a portable gaming experience powered by the **ESP32**
 
 ## Features
 
-An open-source platform for casual and retro games powered by ESP32-S3. The project’s goal is to offer a one-handed gaming experience with fast, short gameplay sessions. It's designed for moments like waiting in line while sipping your coffee—play with one hand, then tuck it in your pocket. The device features a 1.9-inch screen, a 4-way directional pad, 3 function buttons, and a scroll wheel. When the device is held sideways, the scroll wheel acts like a trigger button, allowing you to navigate between menus and enhance the gaming experience through related game mechanics (you can check ColorCode for an example).
+An open-source platform for casual and retro games powered by the ESP32-S3. The project’s goal is to create a device that offers a fast, short, and enjoyable gaming experience, perfect for one-handed use. Ideal for playing during commutes, while waiting in line, or sipping coffee. The device includes a 1.9-inch screen, 4-directional buttons, 3 function buttons, and a scroll that acts as a trigger when held sideways, allowing easy navigation between menus and enhancing the gaming experience (for example, in the ColorCode game).
 
-The platform includes faithful re-creations of retro games. No game engine is used; games are developed purely in C++ with an additional graphics library (in the future, I plan to create a game engine where simple coding and mechanics can be used to manage scenes and develop games; feel free to reach out if you want to participate or help).
+This platform focuses on re-creations of retro games, made without any game engine—just C++ and an additional graphics library. In the future, I plan to create a game engine where scene management can be done with simple code, using the mechanics collected from these games. If you're interested in contributing or collaborating, feel free to reach out!
 
 ## Setup
 
@@ -23,7 +22,6 @@ The platform includes faithful re-creations of retro games. No game engine is us
 
 
 I will share the circuit diagram after creating an optimal solution. Currently, I am using the LilyGO T-Display S3 in the device. I am testing different setups by combining separate boards, screens, and chips. Once I resolve the issues, I will share the final version along with a suitable shell as an STL file for 3dprint .
-
 For now, you need to check the pin connections in the game code for each game individually to test them. Stay tuned! 🚀
 
 ## Usage
