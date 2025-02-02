@@ -17,14 +17,15 @@ This project aims to bring a portable gaming experience powered by the **ESP32**
 
 ### Required Software
 
-- **Arduino IDE**: We recommend using the Arduino IDE to program the ESP32.
+- **Arduino IDE**: I recommend using the Arduino IDE to program the ESP32.
 - **ESP32 Board Support**: Follow the [ESP32 Arduino Setup Guide](https://github.com/espressif/arduino-esp32) to add ESP32 board support to the Arduino IDE.
 
 ### Connection and Upload
 
-1. **Connect Your ESP32**: Use a USB cable to connect the ESP32 device to your computer.
-2. **Open Arduino IDE**: Select the appropriate ESP32 board in the IDE.
-3. **Upload the Code**: Upload the main files from this repository to your ESP32.
+
+I will share the circuit diagram after creating an optimal solution. Currently, I am using the LilyGO T-Display S3 in the device. I am testing different setups by combining separate boards, screens, and chips. Once I resolve the issues, I will share the final version along with a suitable shell as an STL file for 3dprint .
+
+For now, you need to check the pin connections in the game code for each game individually to test them. Stay tuned! 🚀
 
 ## Usage
 
