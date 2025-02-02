@@ -1,4 +1,4 @@
-https://github.com/furkanYldr/EspCon/blob/main/images/pacman.gif# Standalone Handheld Game Console (ESP32)
+
 
 
 ## About the Project
