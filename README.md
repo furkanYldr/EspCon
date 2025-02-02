@@ -1,4 +1,4 @@
-# Standalone Handheld Game Console (ESP32)
+https://github.com/furkanYldr/EspCon/blob/main/images/pacman.gif# Standalone Handheld Game Console (ESP32)
 
 
 ## About the Project
@@ -48,7 +48,19 @@ The console features a simple menu with several retro games. Use the buttons to 
 <img src="./images/pacman.jpg" width="300"/>
 <img src="./images/pacman1.jpg" width="300"/>
 
-![Pacman GIF](./images/pacman.GIF)
+<img src="https://github.com/furkanYldr/EspCon/blob/main/images/pacman.gif" width="300"/>
+
+### ColorCode 
+
+<img src="https://github.com/furkanYldr/EspCon/blob/main/images/colorCode.gif" width="300"/>
+
+### FlappyBall
+
+<img src="https://github.com/furkanYldr/EspCon/blob/main/images/flappyball.GIF" width="200"/>
+
+### 8pool (in progress)
+
+<img src="https://github.com/furkanYldr/EspCon/blob/main/images/8pool.GIF" width="200"/>
 
 ## Contributing
 
