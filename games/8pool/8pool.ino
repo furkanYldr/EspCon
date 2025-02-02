@@ -6,7 +6,7 @@ using namespace std;
 TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite img = TFT_eSprite(&tft);
 
-#define jumpButton 1
+#define jumpButton 10
 
 int lastButtonState = HIGH;
 int buttonState = HIGH;
@@ -30,7 +30,7 @@ int fullYScreen = 320;
 bool hasTouched = false;
 
 
-float fStable = 0.4f;
+float fStable = 0.6f;
 struct sBall {
 
   float px, py;
