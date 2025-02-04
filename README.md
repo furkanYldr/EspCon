@@ -1,4 +1,4 @@
-# Standalone Handheld Game Console (ESP32)
+
 
 
 ## About the Project
@@ -10,7 +10,8 @@ This project aims to bring a portable gaming experience powered by the **ESP32**
 An open-source platform for casual and retro games powered by the ESP32-S3. The project’s goal is to create a device that offers a fast, short, and enjoyable gaming experience, perfect for one-handed use. Ideal for playing during commutes, while waiting in line, or sipping coffee. The device includes a 1.9-inch screen, 4-directional buttons, 3 function buttons, and a scroll that acts as a trigger when held sideways, allowing easy navigation between menus and enhancing the gaming experience (for example, in the ColorCode game).
 
 This platform focuses on re-creations of retro games, made without any game engine—just C++ and an additional graphics library. In the future, I plan to create a game engine where scene management can be done with simple code, using the mechanics collected from these games. If you're interested in contributing or collaborating, feel free to reach out!
-
+### Device
+<img src="./images/device.jpg" width="300"/>
 ## Setup
 
 ### Required Software
@@ -43,6 +44,23 @@ The console features a simple menu with several retro games. Use the buttons to 
 | Breakout        | Planned                 | Brick-breaking game, will be added later. |
 | Tetris          | Planned                 | Classic puzzle game, to be added soon.  |
 | Snake           | Planned                 | The timeless snake game.                |
+### Pacman 
+<img src="./images/pacman.jpg" width="300"/>
+<img src="./images/pacman1.jpg" width="300"/>
+
+<img src="https://github.com/furkanYldr/EspCon/blob/main/images/pacman.gif" width="300"/>
+
+### ColorCode 
+
+<img src="https://github.com/furkanYldr/EspCon/blob/main/images/colorCode.gif" width="300"/>
+
+### FlappyBall
+
+<img src="https://github.com/furkanYldr/EspCon/blob/main/images/flappyball.GIF" width="200"/>
+
+### 8pool (in progress)
+
+<img src="https://github.com/furkanYldr/EspCon/blob/main/images/8pool.GIF" width="200"/>
 
 ## Contributing
 
