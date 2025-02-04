@@ -1,5 +1,6 @@
 #include <TFT_eSPI.h>
 #include <Wire.h>
+#include "resource.h"
 
 
 TFT_eSPI tft = TFT_eSPI();
@@ -11,7 +12,7 @@ TFT_eSprite img = TFT_eSprite(&tft);
 
 int lastButtonState = HIGH;
 int buttonState = HIGH;
-
+int anim = 0;
 unsigned long previousMillis = 0;
 const unsigned long interval = 50;
 float velocity = 0;
@@ -30,6 +31,7 @@ int score = 0;
 int highScore = 0;
 int wight = 20;
 int logicManager = 1;
+bool flap = true;
 
 bool hasTouched = false;
 
@@ -60,8 +62,54 @@ void drawInit() {
   img.fillRect(0, ground, 170, 20, TFT_DARKCYAN);
   img.fillRect(0, ground + 15, 170, 105, 0xDD4C);
 
+  if (flap) {
+    if (anim < 5) {
+      anim++;
+    } else {
+      anim = 0;
+      flap = !flap;
+    }
+  }
+
+
+
   if (y + 3 < ground) {
-    img.fillCircle(ballX, y, 5, 0xFFF9);
+    img.fillCircle(ballX, y, 5, TFT_YELLOW);
+    for (int row = 0; row < ROWS; row++) {
+      for (int col = 0; col < COLS; col++) {
+
+        // X ve Y koordinatlarını hesapla
+        int px = col + ballX - 6;
+        int py = row + y - 3;
+
+        if (flap) {
+          if (flapDown[row][col] == 4) {
+            img.drawPixel(px, py, 0x0204);  // 1 değeri kırmızı
+          } else if (flapDown[row][col] == 2) {
+            img.drawPixel(px, py, 0x9260);  // 2 değeri yeşil
+          } else if (flapDown[row][col] == 3) {
+            img.drawPixel(px, py, 0xFAC0);  // 3 değeri mavi
+          }
+          if (flapDown[row][col] == 1) {
+            img.drawPixel(px, py, TFT_SILVER);  // 1 değeri kırmızı
+          }
+        } else {
+          if (flapUp[row][col] == 4) {
+            img.drawPixel(px, py, 0x0204);  // 1 değeri kırmızı
+          } else if (flapUp[row][col] == 2) {
+            img.drawPixel(px, py, 0x9260);  // 2 değeri yeşil
+          } else if (flapUp[row][col] == 3) {
+            img.drawPixel(px, py, 0xFAC0);  // 3 değeri mavi
+          }
+          if (flapUp[row][col] == 1) {
+            img.drawPixel(px, py, TFT_SILVER);  // 1 değeri kırmızı
+          }
+        }
+      }
+    }
+
+
+
 
   } else {
     img.fillCircle(ballX, y, 5, TFT_RED);
@@ -81,12 +129,20 @@ void drawInit() {
 }
 
 void collomnGenerating() {
+  //img.fillRect(x, 0, wight, 200, 0x3D31);
+
+  img.fillRect(x, 0, 5, 200, 0x0A68);
+  img.fillRect(x + 5, 0, 10, 200, 0x4B68);
+  img.fillRect(x + 15, 0, 5, 200, 0x8DA0);
 
 
-  img.fillRect(x, 0, wight, 200, 0x3D31);
   img.fillRect(x, gapPos1, wight, collumnGap, 0x8E7D);
+  //img.fillRect(z, 0, wight, 200, 0x3D31);
 
-  img.fillRect(z, 0, wight, 200, 0x3D31);
+  img.fillRect(z, 0, 5, 200, 0x0A68);
+  img.fillRect(z + 5, 0, 10, 200, 0x4B68);
+  img.fillRect(z + 15, 0, 5, 200, 0x8DA0);
+
   img.fillRect(z, gapPos2, wight, collumnGap, 0x8E7D);
 
   if (x + 20 < 0) {
@@ -106,8 +162,6 @@ void GameOver(boolean n) {
     img.fillRect(0, 97, 170, 20, TFT_RED);
     img.setTextSize(2);
     img.print(" GAME OVER ");
-    
-
   }
 }
 
@@ -192,13 +246,14 @@ void loop() {
 
 
 
-  if (buttonState == LOW && lastButtonState == HIGH) {  
+  if (buttonState == LOW && lastButtonState == HIGH) {
     if (logicManager == 1) {
       logicManager = 2;
     } else if (logicManager == 2) {
       velocity = -5;
-       
-           
+
+      flap = true;
+
     } else if (logicManager == 3) {
       restart();
     }
@@ -211,7 +266,7 @@ void loop() {
   if (currentMillis - previousMillis >= interval) {
     previousMillis = currentMillis;
 
-     if (logicManager == 2) {
+    if (logicManager == 2) {
       if (hasTouched == false) {
         x -= collumnSpeed;
         z -= collumnSpeed;
@@ -219,14 +274,12 @@ void loop() {
         y += velocity;
       } else {
         y = ground - 3;
-      }}
-   
+      }
+    }
+
     drawInit();
     Serial.println(logicManager);
   }
-
-
-
 
   collisionDetections();
 }
