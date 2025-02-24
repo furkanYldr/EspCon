@@ -99,7 +99,8 @@ void gameSetup() {
 void ghostStateManager() {
 
   for (STRUCTGHOST& ghost : vecGHOST) {
-    if (ghost.STATE != FRIGHTENED) {
+    
+    if (ghost.STATE != FRIGHTENED && ghost.STATE !=EATEN) {
       Serial.println(".alışıyorum ghostmanager");
       if (STATETimer < 7 || (STATETimer < 20 && STATETimer > 14)) {
 
@@ -107,7 +108,8 @@ void ghostStateManager() {
       } else {
         ghost.STATE = CHASE;
       }
-    } else if (ghost.STATE == FRIGHTENED && ghost.STATE !=EATEN ) {
+    }
+     else if (ghost.STATE == FRIGHTENED && ghost.STATE !=EATEN ) {
       if (frightenedCountDown > 0) {
         if (timer > prevTimer) {
           frightenedCountDown--;
@@ -119,6 +121,7 @@ void ghostStateManager() {
         }
       }
     }
+
   }
 }
 void setGameStart() {
@@ -408,6 +411,10 @@ void buttonControl() {
     btnPressed = false;
   }
 }
+
+
+
+
 void collectFood(int row, int col) {
   if (coin_matrix[row][col] == 1) { // Normal coin toplama
     coin_matrix[row][col] = 3;  // Coin toplandı olarak işaretle
@@ -428,10 +435,12 @@ void collectFood(int row, int col) {
     prevScore = score;
   } 
   else if (coin_matrix[row][col] == 2) { // Power-up toplama
-    if (coin_matrix[row][col] != 3) {  // Eğer zaten toplanmışsa işlemi yapma!
+    if (coin_matrix[row][col] != 3) {  
     
-      coin_matrix[row][col] = 3; // Toplandı olarak işaretle
-       score += 20;
+      coin_matrix[row][col] = 3; 
+      Serial.print("freak fruit eaten row = ");
+      Serial.println(coin_matrix[row][col]);
+      score += 20;
       getFreak();
       frightenedCountDown = 25;
       goBack = true;
@@ -439,10 +448,12 @@ void collectFood(int row, int col) {
   }
 }
 
+
+
 void pacmanSetup() {
 
   tft.init();
-  tft.setRotation(2);
+  tft.setRotation(4);
   pinMode(15, OUTPUT);
   digitalWrite(15, 1);
 

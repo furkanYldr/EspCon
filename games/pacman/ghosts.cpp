@@ -158,7 +158,7 @@ pair<int, int> frightenPath(pair<int, int> prev, vector<pair<int, int>>& directi
 
 void eaten() {
   for (STRUCTGHOST& ghost : vecGHOST) {
-    if (ghost.STATE == FRIGHTENED) {
+    if (ghost.STATE == FRIGHTENED && ghost.STATE !=EATEN ) {
       float dx = pacman.px - ghost.px;
       float dy = pacman.py - ghost.py;
       float db = 81;
@@ -167,6 +167,7 @@ void eaten() {
         ghost.STATE = EATEN;
         switch (strike) {
           case 0:
+            
             score += 200;
             strike++;
             break;

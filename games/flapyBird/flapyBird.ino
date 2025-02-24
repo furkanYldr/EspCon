@@ -6,7 +6,7 @@
 TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite img = TFT_eSprite(&tft);
 
-#define jumpButton 10
+#define jumpButton 5
 
 
 
@@ -44,7 +44,7 @@ void setup() {
   Serial.begin(9600);
   pinMode(jumpButton, INPUT_PULLUP);
   tft.init();
-  tft.setRotation(2);
+  tft.setRotation(4);
   tft.setSwapBytes(true);
 
   tft.fillScreen(TFT_BLACK);
@@ -55,13 +55,49 @@ void setup() {
 
   img.pushSprite(0, 0);
 }
-
+int x1= 187;
+int x2 =170;
+int x3 =203; 
 void drawInit() {
+
   img.fillSprite(0x8E7D);
+  if(x3 < 0 ){
+x1= 187;
+x2 =170;
+x3 =203; 
+
+
+  }else{
+  x1 -=1;
+  x2 -=1;
+  x3 -=1;
+}
+     img.fillCircle(x1,85, 15 ,TFT_WHITE);
+      img.fillCircle(x2,89, 11 ,TFT_WHITE);
+       img.fillCircle(x3,93, 7 ,TFT_WHITE);
+
   collomnGenerating();
   img.fillRect(0, ground, 170, 20, TFT_DARKCYAN);
   img.fillRect(0, ground + 15, 170, 105, 0xDD4C);
+  for (int row = 0; row < dinoRows; row++) {
+      for (int col = 0; col < dinoCols; col++) {
 
+     
+        int px = col + 20 ;
+        int py = row + 240 ;
+
+       
+          if (dinoHead[row][col] == 0  ) {
+           
+          } else if (dinoHead[row][col] == 2) {
+            img.drawPixel(px, py, TFT_BLACK);  // 2 değeri yeşil
+          } else if (dinoHead[row][col] == 3) {
+            img.drawPixel(px, py, TFT_WHITE);  // 3 değeri mavi
+          }
+          if (dinoHead[row][col] == 1) {
+            img.drawPixel(px, py, TFT_WHITE);  // 1 değeri kırmızı
+          }
+      }}
   if (flap) {
     if (anim < 5) {
       anim++;
@@ -74,6 +110,7 @@ void drawInit() {
 
 
   if (y + 3 < ground) {
+
     img.fillCircle(ballX, y, 5, TFT_YELLOW);
     for (int row = 0; row < ROWS; row++) {
       for (int col = 0; col < COLS; col++) {
@@ -131,19 +168,30 @@ void drawInit() {
 void collomnGenerating() {
   //img.fillRect(x, 0, wight, 200, 0x3D31);
 
-  img.fillRect(x, 0, 5, 200, 0x0A68);
-  img.fillRect(x + 5, 0, 10, 200, 0x4B68);
-  img.fillRect(x + 15, 0, 5, 200, 0x8DA0);
+  img.fillRect(x,     gapPos1 - 200 , 5, 200, 0x2444);
+  img.fillRect(x + 5, gapPos1 - 200 , 10, 200, 0x8DA0);
+  img.fillRect(x + 15,gapPos1 - 200 , 5, 200, 0xA627);
 
 
-  img.fillRect(x, gapPos1, wight, collumnGap, 0x8E7D);
+  img.fillRect(x,     gapPos1 +50 , 5, 200, 0x2444);
+  img.fillRect(x + 5, gapPos1 +50 , 10, 200, 0x8DA0);
+  img.fillRect(x + 15,gapPos1 +50 , 5, 200, 0xA627);
+
+  //img.fillRect(x, gapPos1, wight, collumnGap, 0x8E7D);
+
   //img.fillRect(z, 0, wight, 200, 0x3D31);
 
-  img.fillRect(z, 0, 5, 200, 0x0A68);
-  img.fillRect(z + 5, 0, 10, 200, 0x4B68);
-  img.fillRect(z + 15, 0, 5, 200, 0x8DA0);
 
-  img.fillRect(z, gapPos2, wight, collumnGap, 0x8E7D);
+  img.fillRect(z,     gapPos2 - 200 , 5, 200, 0x2444);
+  img.fillRect(z + 5, gapPos2 - 200 , 10, 200, 0x8DA0);
+  img.fillRect(z + 15,gapPos2 - 200 , 5, 200, 0xA627);
+
+
+  img.fillRect(z,     gapPos2 +50 , 5, 200, 0x2444);
+  img.fillRect(z + 5, gapPos2 +50 , 10, 200, 0x8DA0);
+  img.fillRect(z + 15,gapPos2 +50 , 5, 200, 0xA627);
+
+ // img.fillRect(z, gapPos2, wight, collumnGap, 0x8E7D);
 
   if (x + 20 < 0) {
     x = 170;
@@ -216,14 +264,14 @@ void Score() {
     highScore = score;
   }
 
-  img.setCursor(8, ground + 40);
+  img.setCursor(75, ground + 20);
   img.setTextSize(6);
   img.setTextDatum(4);
   img.setTextColor(TFT_WHITE, 0xDD4C);
   img.print(String(score));
   img.setCursor(80, ground + 20);
   img.setTextSize(1);
-  img.print("Best score:");
+  img.print("Best :");
   img.print(highScore);
 }
 

@@ -13,12 +13,12 @@
 
 // back 12 pause 1 select 10 
 // button definition
-#define up_btn 11
-#define dwn_btn 3
-#define lft_btn 2
-#define rgh_btn 13 
-#define bck_btn 12
-#define select_btn 10
+#define up_btn 5
+#define dwn_btn 4
+#define lft_btn 6
+#define rgh_btn 2
+#define bck_btn 7
+#define select_btn 3
 
 
 ///// COLOR
