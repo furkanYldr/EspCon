@@ -4,12 +4,14 @@
 #include "snake.h"
 #include "resource.h"
 #include <cstring>
+#include <RotaryEncoder.h>
 
 
 
 
-
-
+TFT_eSPI tft = TFT_eSPI();
+TFT_eSprite img = TFT_eSprite(&tft);
+RotaryEncoder encoder(PIN_IN1, PIN_IN2, RotaryEncoder::LatchMode::TWO03);
 
 
 unsigned long previousMillisMove = 0;
@@ -18,9 +20,7 @@ int timer = 0;
 int prevTimer = 0;
 int prevScore = 0;
 int countDown = 4;
-
-TFT_eSPI tft = TFT_eSPI();
-TFT_eSprite img = TFT_eSprite(&tft);
+int prevEncoderPos = 0;
 
 
 
@@ -33,6 +33,7 @@ bool CATCH = false;
 
 uint8_t Area[areaRow][areaColmn];
 vector<std::pair<int, int>> snake;
+pair<int, int > food ;
 
 void drawInit() {
   img.fillSprite(0xA615);  //0x9634 ;
@@ -57,7 +58,6 @@ void drawInit() {
 
 
 void drawSnake() {
-  pair<int, int > food = {10,10};
   if (UP) {
 
     moveSnake(-1, 0);
@@ -89,17 +89,22 @@ void drawSnake() {
     }
   }
 }
+
 void moveSnake(int dx, int dy) {
+  bool eaten;
   int newX = snake.back().first + dx;
   int newY = snake.back().second + dy;
-
+   eaten = foodEaten(newX ,newY);
   if (newX > 19) newX = 0;
   if (newX < 0) newX = 19;
   if (newY > 16) newY = 0;
   if (newY < 0) newY = 16;
 
   snake.push_back({ newX, newY });
+  if(!eaten){
   snake.erase(snake.begin());
+  eaten = false ;
+  }
 }
 
 pair<int, int> generateFood() {
@@ -108,6 +113,17 @@ pair<int, int> generateFood() {
   return { foodX, foodY };
 }
 
+
+bool foodEaten(int x , int y ){
+
+if(x == food.first && y == food.second){
+food = generateFood();  
+return true;
+}
+return false;
+
+
+}
 void snakeSetup() {
 
 
@@ -122,11 +138,7 @@ void snakeSetup() {
   img.createSprite(172, 320);
   memset(Area, 0, sizeof(Area));
   snake.push_back({ 7, 15 });
-  snake.push_back({ 8, 15 });
-  snake.push_back({ 9, 15 });
-  snake.push_back({ 10, 15 });
-  snake.push_back({ 11, 15 });
-
+  food = generateFood();  
   img.pushSprite(0, 0);
 }
 
@@ -146,7 +158,7 @@ void snakeUpdate() {
 
       static unsigned long previousMillisTime = 0;
 
-      if (currentMillis - previousMillisTime >= 500) {
+      if (currentMillis - previousMillisTime >= 200) {
         previousMillisTime = currentMillis;
         prevTimer = timer;
         drawInit();
@@ -171,6 +183,18 @@ void buttonControl() {
   int btnLEFT = digitalRead(lft_btn);
   int btnPAUSE = digitalRead(bck_btn);
   int btnSELECT = digitalRead(select_btn);
+
+
+
+  encoder.tick();  
+
+  int newEncoderPos = encoder.getPosition();  
+
+  if (newEncoderPos != prevEncoderPos) {  
+    prevEncoderPos = newEncoderPos;
+  }
+
+
 
   if (!btnPressed) {
     if (btnUP == LOW && !DOWN) {  // Ters hareketi engelle

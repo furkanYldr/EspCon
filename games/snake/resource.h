@@ -8,6 +8,8 @@
 
 
 // button definition
+#define PIN_IN1 48 
+#define PIN_IN2 47
 #define up_btn 5
 #define dwn_btn 4
 #define lft_btn 6

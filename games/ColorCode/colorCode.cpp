@@ -10,17 +10,17 @@
 #include "GameEngine.h"
 using namespace std;
 
-#define PIN_IN1 43
-#define PIN_IN2 44
+#define PIN_IN1 48 
+#define PIN_IN2 47
 
 RotaryEncoder encoder(PIN_IN1, PIN_IN2, RotaryEncoder::LatchMode::TWO03);
 
-#define up_btn 11
-#define dwn_btn 3
-#define lft_btn 2
-#define rgh_btn 13
-#define selectBtn 10
-#define backBtn 12
+#define up_btn 5
+#define dwn_btn 4
+#define lft_btn 6
+#define rgh_btn 2
+#define selectBtn 3
+#define backBtn 7
 
 TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite img = TFT_eSprite(&tft);
@@ -48,7 +48,7 @@ bool lastControl = HIGH;
 
 void Csetup() {
   tft.init();
-  tft.setRotation(3);
+  tft.setRotation(1);
   img.createSprite(320, 170);
   pinMode(lft_btn, INPUT_PULLUP);
   pinMode(rgh_btn, INPUT_PULLUP);
