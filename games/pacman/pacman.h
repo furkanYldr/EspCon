@@ -7,7 +7,6 @@
 #include "ghosts.h"
 #include "tabs.h"
 #include <vector>
-
 using namespace std;
 
 // Animasyon ve yön enumları

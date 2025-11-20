@@ -6,7 +6,7 @@
 TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite img = TFT_eSprite(&tft);
 
-#define jumpButton 5
+#define jumpButton 4
 
 
 
@@ -32,6 +32,7 @@ int highScore = 0;
 int wight = 20;
 int logicManager = 1;
 bool flap = true;
+int lastLevel=1;
 
 bool hasTouched = false;
 
@@ -58,46 +59,31 @@ void setup() {
 int x1= 187;
 int x2 =170;
 int x3 =203; 
+int randY = 0;
 void drawInit() {
 
   img.fillSprite(0x8E7D);
   if(x3 < 0 ){
-x1= 187;
-x2 =170;
-x3 =203; 
-
+x1= 197;
+x2 =180;
+x3 =213; 
+  randY=+ 50 - std::rand() % 150;
 
   }else{
+
+
   x1 -=1;
   x2 -=1;
   x3 -=1;
 }
-     img.fillCircle(x1,85, 15 ,TFT_WHITE);
-      img.fillCircle(x2,89, 11 ,TFT_WHITE);
-       img.fillCircle(x3,93, 7 ,TFT_WHITE);
+       img.fillCircle((int)x1,85 +randY , 15 ,TFT_WHITE);
+       img.fillCircle((int)x2,89 +randY , 11 ,TFT_WHITE);
+       img.fillCircle((int)x3,93 +randY , 7 ,TFT_WHITE);
 
   collomnGenerating();
-  img.fillRect(0, ground, 170, 20, TFT_DARKCYAN);
-  img.fillRect(0, ground + 15, 170, 105, 0xDD4C);
-  for (int row = 0; row < dinoRows; row++) {
-      for (int col = 0; col < dinoCols; col++) {
+  img.fillRect(0, ground, 172, 20, TFT_DARKCYAN);
+  img.fillRect(0, ground + 15, 172, 105, 0xDD4C);
 
-     
-        int px = col + 20 ;
-        int py = row + 240 ;
-
-       
-          if (dinoHead[row][col] == 0  ) {
-           
-          } else if (dinoHead[row][col] == 2) {
-            img.drawPixel(px, py, TFT_BLACK);  // 2 değeri yeşil
-          } else if (dinoHead[row][col] == 3) {
-            img.drawPixel(px, py, TFT_WHITE);  // 3 değeri mavi
-          }
-          if (dinoHead[row][col] == 1) {
-            img.drawPixel(px, py, TFT_WHITE);  // 1 değeri kırmızı
-          }
-      }}
   if (flap) {
     if (anim < 5) {
       anim++;
@@ -207,7 +193,7 @@ void GameOver(boolean n) {
   if (n) {
     img.setCursor(20, 100);
     img.setTextColor(TFT_BLACK, TFT_RED);
-    img.fillRect(0, 97, 170, 20, TFT_RED);
+    img.fillRect(0, 97, 172, 20, TFT_RED);
     img.setTextSize(2);
     img.print(" GAME OVER ");
   }
@@ -248,6 +234,7 @@ void restart() {
   currentCollumn = 1;
   score = 0;
   hasTouched = false;
+  collumnSpeed = 2;
 }
 void Score() {
 
@@ -264,7 +251,12 @@ void Score() {
     highScore = score;
   }
 
-  img.setCursor(75, ground + 20);
+  if( score%10 == 0 &&  score/10 >= lastLevel ){
+    collumnSpeed += 0.2;
+    lastLevel += 1;
+  }
+
+  img.setCursor(75, ground + 35);
   img.setTextSize(6);
   img.setTextDatum(4);
   img.setTextColor(TFT_WHITE, 0xDD4C);
@@ -272,7 +264,7 @@ void Score() {
   img.setCursor(80, ground + 20);
   img.setTextSize(1);
   img.print("Best :");
-  img.print(highScore);
+  img.print(collumnSpeed);
 }
 
 void startGame() {

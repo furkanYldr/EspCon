@@ -15,12 +15,12 @@ using namespace std;
 
 RotaryEncoder encoder(PIN_IN1, PIN_IN2, RotaryEncoder::LatchMode::TWO03);
 
-#define up_btn 5
-#define dwn_btn 4
-#define lft_btn 6
-#define rgh_btn 2
-#define selectBtn 3
-#define backBtn 7
+#define up_btn 4
+#define dwn_btn 3
+#define lft_btn 5
+#define rgh_btn 1
+#define selectBtn 7
+#define backBtn 6
 
 TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite img = TFT_eSprite(&tft);

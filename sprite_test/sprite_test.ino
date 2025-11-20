@@ -17,33 +17,33 @@ const int tileSize = 2 * 16;
 const int mapCols = 24;
 const int mapRows = 15;
 
-byte tileMap[mapRows][mapCols] = {
-  {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8},
-  {2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9},
-  {3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10},
-  {4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11},
-  {5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12},
-  {6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13},
-  {7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14},
-  {8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15},
-  {9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0},
-  {10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1},
-  {11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2},
-  {12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3},
-  {13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4},
-  {14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5}
+uint8_t tileMap[mapRows][mapCols] = { 
+  {18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18},
+  {18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18},
+  {18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18},
+  {18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18},
+  {18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18},
+  {18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18},
+  {18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18},
+  {18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18},
+  {18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18},
+  {18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18},
+  {18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18},
+  {18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18}
 };
+
 
 uint16_t buffer[BERRY_GARDEN_WIDTH * BERRY_GARDEN_HEIGHT];
 
-// Harita üzerinde top'un konumu (float ile pürüzsüz kaydırma yaparız)
 float playerX = mapCols * tileSize / 2;
 float playerY = mapRows * tileSize / 2;
 
-// Yön açısı (derece cinsinden)
 int directionAngle = 0;
 
+int lastEncoderPos = 0;
+
 void setup() {
+  Serial.begin(115200);
   tft.init();
   tft.setRotation(1);
   tft.fillScreen(TFT_BLACK);
@@ -54,37 +54,34 @@ void setup() {
 
   pinMode(rgh_btn, INPUT_PULLUP);
 }
-
 void loop() {
-  encoder.tick(); // Rotary encoder'ı oku
-
-  static int lastEncoderPos = 0;
+  encoder.tick();
   int newPos = encoder.getPosition();
   if (newPos != lastEncoderPos) {
-    directionAngle = (directionAngle + (newPos - lastEncoderPos) * 15) % 360; // Her tık 15 derece döndür
-    if (directionAngle < 0) directionAngle += 360;
+    int diff = newPos - lastEncoderPos;
+
+    directionAngle += diff * 45; // 1 tıkta 45 derece
+    directionAngle = (directionAngle + 360) % 360; // 0-359 arasında tut
+
     lastEncoderPos = newPos;
   }
 
   if (digitalRead(rgh_btn) == LOW) {
-    // Butona basıldıysa, seçili yöne doğru hareket ettir
     movePlayer();
   }
 
-   render(); // Haritayı yeniden çiz
-
-  delay(20); // Küçük bir bekleme
+  render();
 }
 
+float speed = 5 ;
+
 void movePlayer() {
-  // Hareketi X ve Y bileşenlerine ayır
   float radians = directionAngle * 3.1415926 / 180.0;
-  float dx = cos(radians) * 4; // Hız
-  float dy = sin(radians) * 4;
+  float dx = cos(radians) * speed; 
+  float dy = sin(radians) * speed;
   playerX += dx;
   playerY += dy;
 
-  // Harita dışına taşmayı engelle
   if (playerX < 0) playerX = 0;
   if (playerX > mapCols * tileSize - 1) playerX = mapCols * tileSize - 1;
   if (playerY < 0) playerY = 0;
@@ -104,14 +101,14 @@ void drawBerryTileByNumber(int tileNumber, int xPos, int yPos) {
     for (int x = 0; x < 16; x++) {
       int i = (startY + y) * BERRY_GARDEN_WIDTH + (startX + x);
       if (i >= BERRY_GARDEN_WIDTH * BERRY_GARDEN_HEIGHT) continue;
+      
+
       uint16_t rawColor = pgm_read_word(&Berry_Garden[i]);
       uint16_t color = (rawColor >> 8) | (rawColor << 8);
 
       img.fillRect(x * 2 +xPos, y * 2 + yPos , 2, 2, color);
     }
   }
-
-  
 }
 
 void drawMap() {
@@ -121,7 +118,7 @@ void drawMap() {
   if (camX < 0) camX = 0;
   if (camY < 0) camY = 0;
   if (camX > mapCols * tileSize - screenW) camX = mapCols * tileSize - screenW;
-  if (camY > mapRows * tileSize - screenH) camY = mapRows * tileSize - screenH;
+  if (camY > mapRows * tileSize - screenH) camY = mapCols * tileSize - screenH;
 
   for (int row = 0; row < mapRows; row++) {
     for (int col = 0; col < mapCols; col++) {
@@ -135,29 +132,28 @@ void drawMap() {
       if (tileScreenX + tileSize < 0 || tileScreenX > screenW) continue;
       if (tileScreenY + tileSize < 0 || tileScreenY > screenH) continue;
 
+      
       drawBerryTileByNumber(tileNumber, tileScreenX, tileScreenY);
     }
   }
 }
-void render(){
 
+void render(){
   img.fillScreen(TFT_BLACK);
   drawMap();
   drawPlayer(); 
   img.pushSprite(0,0);
-
 }
 
 void drawPlayer() {
-  // Ortada sabit duran bir top ve yön oku
   int centerX = screenW / 2;
   int centerY = screenH / 2;
 
   img.fillCircle(centerX, centerY, 8, TFT_WHITE); // Top
 
-  // Yön oku
   float radians = directionAngle * 3.1415926 / 180.0;
-  int lineX = centerX + cos(radians) * 12;
-  int lineY = centerY + sin(radians) * 12;
+  int lineX = centerX + cos(radians) * 16;
+  int lineY = centerY + sin(radians) * 16;
   img.drawLine(centerX, centerY, lineX, lineY, TFT_RED);
+  img.fillCircle(lineX,lineY,2,TFT_RED);
 }

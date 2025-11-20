@@ -23,7 +23,7 @@ int health = 3;
 TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite img = TFT_eSprite(&tft);
 
-
+// general game varaibles
 int score = 0;
 int x = 0;
 int y = 0;
@@ -34,13 +34,14 @@ int c = 0;
 const int xPadding = 76;
 const int yPadding = -3;
 int ghostAnim = 0;
-
+// button control varaibles.
 bool UP = false;
 bool DOWN = false;
 bool LEFT = false;
 bool RIGHT = false;
 bool SELECT = false;
 bool CATCH = false;
+bool btnPressed = false;
 
 bool ghostINKY = false;
 bool ghostCLYDE = false;
@@ -302,7 +303,7 @@ void canMove() {
   pacMOVEMENT();
 }
 
-bool btnPressed = false;
+
 
 void pacMOVEMENT() {
 
@@ -369,7 +370,9 @@ void pacMOVEMENT() {
   }
 }
 
+
 void buttonControl() {
+
 
   int btnDOWN = digitalRead(dwn_btn);
   int btnUP = digitalRead(up_btn);
@@ -377,6 +380,7 @@ void buttonControl() {
   int btnLEFT = digitalRead(lft_btn);
   int btnPAUSE = digitalRead(bck_btn);
   int btnSELECT = digitalRead(select_btn);
+
 
   if (!btnPressed) {
     if (btnUP == LOW) {
@@ -406,11 +410,14 @@ void buttonControl() {
       btnPressed = true;
     }
   }
+
   // Buton bırakıldığında sıfırla
-  if (btnUP == HIGH && btnDOWN == HIGH && btnRIGHT == HIGH && btnLEFT == HIGH && btnPAUSE == HIGH && btnSELECT == HIGH) {
+  if (btnUP == HIGH && btnDOWN == HIGH && btnRIGHT == HIGH &&
+      btnLEFT == HIGH && btnPAUSE == HIGH && btnSELECT == HIGH) {
     btnPressed = false;
   }
 }
+
 
 
 
@@ -454,14 +461,14 @@ void pacmanSetup() {
 
   tft.init();
   tft.setRotation(4);
-  pinMode(15, OUTPUT);
-  digitalWrite(15, 1);
+
 
   pinMode(bck_btn, INPUT_PULLUP);
   pinMode(lft_btn, INPUT_PULLUP);
   pinMode(rgh_btn, INPUT_PULLUP);
   pinMode(up_btn, INPUT_PULLUP);
   pinMode(dwn_btn, INPUT_PULLUP);
+    pinMode(select_btn, INPUT_PULLUP);
   tft.fillScreen(0x0130);
   img.createSprite(172, 320);
   img.pushSprite(0, 0);
