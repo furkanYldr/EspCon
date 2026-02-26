@@ -4,7 +4,7 @@
 
 #define PIN_IN1 47
 #define PIN_IN2 48
-#define rgh_btn 2 // Scroll üzerindeki buton
+#define rgh_btn 1 
 
 RotaryEncoder encoder(PIN_IN1, PIN_IN2, RotaryEncoder::LatchMode::TWO03);
 

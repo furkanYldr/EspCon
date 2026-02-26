@@ -110,8 +110,8 @@ void setup() {
   pinMode(ENCODER_DT,  INPUT_PULLUP);
 
   // Interrupt'ları bağla (CHANGE: sinyal değiştiği an tetiklenir)
-  attachInterrupt(digitalReadToInterrupt(ENCODER_CLK), readEncoderISR, CHANGE);
-  attachInterrupt(digitalReadToInterrupt(ENCODER_DT),  readEncoderISR, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(ENCODER_CLK), readEncoderISR, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(ENCODER_DT),  readEncoderISR, CHANGE);
 
   Serial.println("Encoder test basladi (Interrupt Version)...");
 
@@ -235,7 +235,7 @@ void updateGame(float fElapsedTime) {
   polygon &s = vecShapes[activeShapeIndex];
 
   const float moveSpeed = 60.0f;  // px/s
-  const float stepAngle = 0.05f;  // ÇOK ÖNEMLİ: Interrupt çok hassastır, bu değeri düşürdüm.
+  const float stepAngle = 0.15f;  // ÇOK ÖNEMLİ: Interrupt çok hassastır, bu değeri düşürdüm.
 
   // ====== COUNTER KULLANIMI ======
   // Interrupt çok hızlı sayabilir (her "tık" için 4 değer artabilir)

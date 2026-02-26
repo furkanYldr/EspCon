@@ -1,357 +1,305 @@
 #include <TFT_eSPI.h>
 #include <Wire.h>
 #include <vector>
+
 using namespace std;
 
+// --- EKRAN ---
 TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite img = TFT_eSprite(&tft);
 
-#define jumpButton 10
+// --- TUŞLAR ---
+#define BTN_RIGHT 1
+#define BTN_LEFT  5
+#define BTN_DROP  3
 
-int lastButtonState = HIGH;
-int buttonState = HIGH;
-
-unsigned long previousMillis = 0;
-const unsigned long interval = 33;
-float elapsedTime = 0;
-
-
-
+// --- OYUN AYARLARI ---
 const int SCREEN_WIDTH = 172;
 const int SCREEN_HEIGHT = 320;
-int top = 40;
-int ground = 290;
-int gravity = 20;
+const int DEAD_LINE = 50; 
+
+// --- BASİT VE HIZLI FİZİK AYARLARI ---
+const int SUB_STEPS = 2;        // 4 veya 8 değil, sadece 2. Hem hızlı hem yeterli.
+const float GRAVITY = 0.35f;    // Yerçekimi
+const float FRICTION = 0.92f;   // Sürtünme
+const float WALL_BOUNCE = 0.2f; // Duvar sekmesi
+
 int score = 0;
-int highScore = 0;
-int logicManager = 2;
-int fullXScreen = 172;
-int fullYScreen = 320;
-bool hasTouched = false;
+bool isGameOver = false;
 
-
-float fStable = 0.5f;
+// Tehlike Sayacı
+unsigned long dangerStartTime = 0; 
+bool inDanger = false;             
 
 struct sBall {
-
-  float px, py;
-  float ox, oy;
-  float vx, vy;
-  float ax, ay;
-  float radius;
-  
+  float px, py;       
+  float vx, vy;       
+  float radius;       
   unsigned int bColor;
-  float mass;
-  int scale;
-  int id;
+  float mass;         
+  int scale;          
+  int id;             
+  bool isDead = false;
 };
 
-struct sLineSegment {
-  float sx, sy;
-  float ex, ey;
-  float radius = 0;
-};
-
-vector<sLineSegment> vecLines;
 vector<sBall> vecBalls;
-vector<sBall *> vecFakeBalls;
-vector<pair<sBall *, sBall *>> vecCollidingPairs;
-vector<int> BallRadius = {
-  4,   //0
-  8,   //1
-  11,   //2
-  15,  //3
-  19,  //4
-  25,  //5
-  30,  //6
-  35,  //7
-  40 / 8
 
-};
-vector<unsigned int> ballColors{
-  0xBF3A,
-  0x218B,
-  0xEEF9,
-  0x7337,
-  0xFC60,
-  0xB8A1,
-  0xD8D0,
-  0xEDC9,
-  0x4AA4
+float dropperX = 85;    
+float moveSpeed = 5.0;  // Sağa sola gidiş hızlandı
+int nextBallScale = 0;
+bool canDrop = true;
+unsigned long lastDropTime = 0;
 
+// Yarıçaplar
+vector<int> BallRadius = { 6, 11, 16, 21, 27, 33, 40, 48, 56 }; 
+vector<unsigned int> ballColors = {
+  0xBF3A, 0x218B, 0xEEF9, 0x7337, 0xFC60,
+  0xB8A1, 0xD8D0, 0xEDC9, 0x4AA4
 };
 
-void addLine(float x1, float y1, float x2, float y2) {
-
-  sLineSegment l;
-  l.sx = x1;
-  l.sy = y1;
-  l.ex = x2;
-  l.ey = y2;
-
-  vecLines.emplace_back(l);
-}
-void addBall(float x, float y, float r) {
+void addBall(float x, float y, int scaleVal) {
   sBall b;
   b.px = x;
   b.py = y;
   b.vx = 0;
   b.vy = 0;
-  b.ax = 0;
-  b.ay = 0;
-   b.scale = r ; 
-  b.bColor = ballColors[b.scale];
- 
-  b.radius = BallRadius[b.scale];
-  b.mass = 1;
- 
-  b.id = vecBalls.size();
-  vecBalls.emplace_back(b);
+  b.scale = scaleVal;
   
-};
+  if (b.scale >= BallRadius.size()) b.scale = BallRadius.size() - 1;
+  
+  b.bColor = ballColors[b.scale];
+  b.radius = BallRadius[b.scale];
+  b.mass = b.radius * b.radius; // Kütle hala r^2 (büyükler ağır olsun)
+  
+  b.id = millis() + random(0, 9999);
+  b.isDead = false;
+  vecBalls.emplace_back(b);
+}
 
 void setup() {
-  pinMode(15, OUTPUT);
-  digitalWrite(15, 1);
+  Serial.begin(115200);
+  pinMode(BTN_RIGHT, INPUT_PULLUP);
+  pinMode(BTN_LEFT, INPUT_PULLUP);
+  pinMode(BTN_DROP, INPUT_PULLUP);
 
-  Serial.begin(9600);
-  pinMode(jumpButton, INPUT_PULLUP);
   tft.init();
-  tft.setRotation(2);
+  tft.setRotation(0); 
   tft.setSwapBytes(true);
-
   tft.fillScreen(TFT_BLACK);
-  img.createSprite(172, 320);
-  img.setTextDatum(4);
+
+  img.createSprite(SCREEN_WIDTH, SCREEN_HEIGHT);
+  img.setTextDatum(MC_DATUM);
   img.setTextColor(TFT_WHITE, TFT_BLACK);
-  img.pushSprite(0, 0);
-
-  addLine(0, 0, 0, 320);
-  addLine(170, 0, 170, 320);
-  addLine(0, 320, 170, 320);
-  addLine(0, 0, 170, 0);
- // addBall(85, 160, 8);
-// addBall(85, 160, 7);
-// addBall(85, 160, 6);
-// addBall(85, 160, 5);
-// addBall(85, 160, 4);
-// addBall(85, 160, 3);
-// addBall(85, 160, 2);
-// addBall(85, 160, 1);
-// addBall(85, 160, 0);
+  
+  nextBallScale = random(0, 5); 
 }
 
-void drawInit() {
-  img.fillSprite(0x04CC);
+// --- HIZLI FİZİK MOTORU ---
+void updatePhysics() {
+  if (isGameOver) return;
 
+  // Döngüyü az tutuyoruz ki işlemci yorulmasın
+  float dt = 1.0f / SUB_STEPS; 
 
-  // img.drawFastHLine(0, top, 172, TFT_SILVER);
-  for (auto ball : vecBalls) {
-    img.fillCircle(ball.px, ball.py, ball.radius, ball.bColor);
-  }
-  for (auto line : vecLines) {
-    img.drawLine(line.sx, line.sy, line.ex, line.ey, TFT_BLACK);
-  }
+  for (int step = 0; step < SUB_STEPS; step++) {
+    
+    // 1. Hareket
+    for (auto &ball : vecBalls) {
+      if (ball.isDead) continue;
 
+      ball.vx *= pow(FRICTION, dt); 
+      ball.vy *= pow(FRICTION, dt); 
+      ball.vy += GRAVITY * dt;      
 
-  img.pushSprite(0, 0);
-}
+      ball.px += ball.vx * dt; 
+      ball.py += ball.vy * dt;
 
-void GameOver(boolean n) {
-  if (n) {
-    img.setCursor(20, 100);
-    img.setTextColor(TFT_BLACK, TFT_RED);
-    img.fillRect(0, 97, 170, 20, TFT_RED);
-    img.setTextSize(2);
-    img.print(" GAME OVER ");
-  }
-}
-
-void Score() {
-
-  img.setCursor(10, 10);
-  img.setTextSize(2);
-  img.setTextDatum(4);
-  img.setTextColor(0xEC84);  //0xEC84
-  img.println(score);
-}
-
-void startGame() {
-
-  img.setCursor(10, 72);
-  img.setTextSize(2);
-  img.setTextDatum(4);
-  img.setTextColor(0xEC84);  //0xEC84
-  img.print(String("MERGE BAL"));
-  img.setCursor(100, 95);
-  img.setTextSize(1);
-  img.print("By FYldrr");
-}
-void collisionDetect() {
-  auto doCircelOverlap = [](float x1, float y1, float r1, float x2, float y2, float r2) {
-    return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2) <= (r1 + r2) * (r1 + r2);
-  };
-
-  for (auto &ball : vecBalls) {
-
-    ball.ox = ball.px;
-    ball.oy = ball.py;
-    // Add Drag to emulate rolling friction
-    ball.ax = -ball.vx * 0.6f;  // Apply drag and gravity
-    ball.ay = -ball.vy * 0.6f + 500;
-
-    // Update ball physics
-    ball.vx += ball.ax * 0.01;
-    ball.vy += ball.ay * 0.01;
-    ball.px += ball.vx * 0.01;
-    ball.py += ball.vy * 0.01;
-
-
-    // Clamp velocity near zero
-    if (fabs(ball.vx * ball.vx + ball.vy * ball.vy) < fStable) {
-      ball.vx = 0;
-      ball.vy = 0;
-    }
-  }
-
-  for (auto &ball : vecBalls) {
-
-    for (auto &edge : vecLines) {
-      // Check that line formed by velocity vector, intersects with line segment
-      float fLineX1 = edge.ex - edge.sx;
-      float fLineY1 = edge.ey - edge.sy;
-
-      float fLineX2 = ball.px - edge.sx;
-      float fLineY2 = ball.py - edge.sy;
-
-      float fEdgeLength = fLineX1 * fLineX1 + fLineY1 * fLineY1;
-
-      float t = max(0.0f, min(fEdgeLength, (fLineX1 * fLineX2 + fLineY1 * fLineY2))) / fEdgeLength;
-
-      float fClosestPointX = edge.sx + t * fLineX1;
-      float fClosestPointY = edge.sy + t * fLineY1;
-
-      float fDistance = sqrtf((ball.px - fClosestPointX) * (ball.px - fClosestPointX) + (ball.py - fClosestPointY) * (ball.py - fClosestPointY));
-
-      if (fDistance <= (ball.radius + edge.radius)) {
-
-        sBall *fakeball = new sBall();
-        fakeball->radius = edge.radius;
-        fakeball->mass = ball.mass * 0.8f;
-        fakeball->px = fClosestPointX;
-        fakeball->py = fClosestPointY;
-        fakeball->vx = -ball.vx;
-        fakeball->vy = -ball.vy;
-
-
-        vecFakeBalls.push_back(fakeball);
-
-        vecCollidingPairs.push_back({ &ball, fakeball });
-
-        float fOverlap = 1.0f * (fDistance - ball.radius - fakeball->radius);
-
-        ball.px -= fOverlap * (ball.px - fakeball->px) / fDistance;
-        ball.py -= fOverlap * (ball.py - fakeball->py) / fDistance;
+      // Duvarlar
+      if (ball.px - ball.radius < 0) {
+        ball.px = ball.radius;
+        ball.vx *= -WALL_BOUNCE;
+      } else if (ball.px + ball.radius > SCREEN_WIDTH) {
+        ball.px = SCREEN_WIDTH - ball.radius;
+        ball.vx *= -WALL_BOUNCE;
+      }
+      
+      if (ball.py + ball.radius > SCREEN_HEIGHT) {
+        ball.py = SCREEN_HEIGHT - ball.radius;
+        ball.vy *= -WALL_BOUNCE; 
+        // Yerde titremesin diye ufak hızları sıfırla
+        if (abs(ball.vy) < 0.5f) ball.vy = 0;
       }
     }
-    for (auto &target : vecBalls) {
-      if (ball.id != target.id) {
-        if (doCircelOverlap(ball.px, ball.py, ball.radius, target.px, target.py, target.radius)) {
-         if(ball.scale == target.scale){
-          ball.scale += 1;
-          ball.radius = BallRadius[ball.scale];
-           ball.bColor = ballColors[ball.scale];
-          target.radius = 0 ;
-          vecBalls.erase( vecBalls.begin()+ target.id );
+
+    // 2. Çarpışma (Basit Yöntem - Tek geçiş)
+    for (size_t i = 0; i < vecBalls.size(); i++) {
+      for (size_t j = i + 1; j < vecBalls.size(); j++) {
+        sBall &b1 = vecBalls[i];
+        sBall &b2 = vecBalls[j];
+
+        if (b1.isDead || b2.isDead) continue;
+
+        float dx = b1.px - b2.px;
+        float dy = b1.py - b2.py;
+        float distSq = dx*dx + dy*dy;
+        float minDist = b1.radius + b2.radius;
+
+        if (distSq < minDist * minDist) {
+          float dist = sqrt(distSq);
+          if (dist == 0) dist = 0.1f;
+
+          // MERGE
+          if (step == 0 && b1.scale == b2.scale && b1.scale < 8) { 
+             b1.isDead = true;
+             b2.isDead = true;
+             score += (b1.scale + 1) * 10;
+             float midX = (b1.px + b2.px) / 2;
+             float midY = (b1.py + b2.py) / 2;
+             addBall(midX, midY, b1.scale + 1);
+             continue;
+          }
+
+          // FİZİK (Basit İtme)
+          float overlap = (minDist - dist);
+          float nx = dx / dist;
+          float ny = dy / dist;
+
+          // Kütle oranına göre itme (Büyük olan az kaysın)
+          float totalMass = b1.mass + b2.mass;
+          float r1 = b2.mass / totalMass;
+          float r2 = b1.mass / totalMass;
           
-          }else {
+          // Pozisyon düzeltme (Yumuşak değil, direkt ayır)
+          float separationFactor = 0.8f; // %80 ayır (Titremeyi azaltır)
+          b1.px += nx * overlap * r1 * separationFactor;
+          b1.py += ny * overlap * r1 * separationFactor;
+          b2.px -= nx * overlap * r2 * separationFactor;
+          b2.py -= ny * overlap * r2 * separationFactor;
           
-          vecCollidingPairs.push_back({ &ball, &target });
+          // Hız Tepkisi
+          float k = 0.1f; // Zıplama katsayısı (Düşük tutuldu)
+          float dvx = b1.vx - b2.vx;
+          float dvy = b1.vy - b2.vy;
+          float vn = dvx * nx + dvy * ny;
 
-          // Distance between ball centers
-          float fDistance = sqrtf((ball.px - target.px) * (ball.px - target.px) + (ball.py - target.py) * (ball.py - target.py));
-
-          // Calculate displacement required
-          float fOverlap = (fDistance - ball.radius - target.radius);
-
-          ball.px -= fOverlap * (ball.px - target.px) / fDistance;
-          ball.py -= fOverlap * (ball.py - target.py) / fDistance;
-
-          target.px += fOverlap * (ball.px - target.px) / fDistance;
-          target.py += fOverlap * (ball.py - target.py) / fDistance;
+          if (vn < 0) {
+             float impulse = -(1 + k) * vn;
+             b1.vx += nx * impulse * r1;
+             b1.vy += ny * impulse * r1;
+             b2.vx -= nx * impulse * r2;
+             b2.vy -= ny * impulse * r2;
           }
         }
       }
     }
-    //silebilirm her an
-    float fIntendedSpeed = sqrtf(ball.vx * ball.vx + ball.vy * ball.vy);
-    float fIntendedDistance = fIntendedSpeed * 0.001;
-    float fActualDistance = sqrtf((ball.px - ball.ox) * (ball.px - ball.ox) + (ball.py - ball.oy) * (ball.py - ball.oy));
-    float fActualTime = fActualDistance / fIntendedSpeed;
-  }
-  // fatal function
-  for (auto c : vecCollidingPairs) {
-    sBall *b1 = c.first;
-    sBall *b2 = c.second;
-
-    // Distance between balls
-    float fDistance = sqrtf((b1->px - b2->px) * (b1->px - b2->px) + (b1->py - b2->py) * (b1->py - b2->py));
-
-    // Normal
-    float nx = (b2->px - b1->px) / fDistance;
-    float ny = (b2->py - b1->py) / fDistance;
-
-    // Tangent
-    float tx = -ny;
-    float ty = nx;
-
-    // Dot Product Tangent
-    float dpTan1 = b1->vx * tx + b1->vy * ty;
-    float dpTan2 = b2->vx * tx + b2->vy * ty;
-
-    // Dot Product Normal
-    float dpNorm1 = b1->vx * nx + b1->vy * ny;
-    float dpNorm2 = b2->vx * nx + b2->vy * ny;
-
-    // Conservation of momentum in 1D
-    float m1 = (dpNorm1 * (b1->mass - b2->mass) + 2.0f * b2->mass * dpNorm2) / (b1->mass + b2->mass);
-    float m2 = (dpNorm2 * (b2->mass - b1->mass) + 2.0f * b1->mass * dpNorm1) / (b1->mass + b2->mass);
-
-    // Update ball velocities
-    b1->vx = tx * dpTan1 + nx * m1;
-    b1->vy = ty * dpTan1 + ny * m1;
-    b2->vx = tx * dpTan2 + nx * m2;
-    b2->vy = ty * dpTan2 + ny * m2;
   }
 
-  for (auto &b : vecFakeBalls) delete b;
-  vecFakeBalls.clear();
-  vecCollidingPairs.clear();
+  for (int i = vecBalls.size() - 1; i >= 0; i--) {
+    if (vecBalls[i].isDead) vecBalls.erase(vecBalls.begin() + i);
+  }
 }
 
+void checkGameOver() {
+  if (isGameOver) return;
+  bool currentlyOverLine = false;
+  for (auto &b : vecBalls) {
+    // Dead line üstünde ve hızı düşükse
+    if (b.py < DEAD_LINE && abs(b.vy) < 0.5f) {
+      currentlyOverLine = true;
+      break; 
+    }
+  }
+  if (currentlyOverLine) {
+    if (!inDanger) {
+      inDanger = true;
+      dangerStartTime = millis();
+    } else {
+      if (millis() - dangerStartTime > 3000) isGameOver = true;
+    }
+  } else {
+    inDanger = false;
+  }
+}
 
-void loop() {
+void draw() {
+  img.fillSprite(0x2104); 
+  
+  // Tehlike Çizgisi
+  if (inDanger) {
+    if ((millis() / 200) % 2 == 0) img.drawFastHLine(0, DEAD_LINE, SCREEN_WIDTH, TFT_YELLOW);
+    else img.drawFastHLine(0, DEAD_LINE, SCREEN_WIDTH, TFT_RED);
+  } else {
+    img.drawFastHLine(0, DEAD_LINE, SCREEN_WIDTH, TFT_RED);
+  }
 
-  buttonState = digitalRead(jumpButton);
-
-  if (buttonState == LOW && lastButtonState == HIGH) {
-    if (logicManager == 1) {
-      logicManager = 2;
-    } else if (logicManager == 2) {
-      int randomValue =  2;//rand() % 9;
-      addBall(85,20,randomValue);
-    } else if (logicManager == 3) {
+  // Topları Çiz
+  for (auto &ball : vecBalls) {
+    img.fillCircle((int)ball.px, (int)ball.py, (int)ball.radius, ball.bColor);
+    img.drawCircle((int)ball.px, (int)ball.py, (int)ball.radius, TFT_BLACK);
+    
+    // Basit Yüz
+    if(ball.scale >= 2) {
+       img.drawPixel(ball.px - 4, ball.py - 2, TFT_BLACK);
+       img.drawPixel(ball.px + 4, ball.py - 2, TFT_BLACK);
     }
   }
 
-  lastButtonState = buttonState;
-
-
-  unsigned long currentMillis = millis();
-  elapsedTime = (currentMillis - previousMillis) / 1000.0f;
-  if (currentMillis - previousMillis >= interval) {
-    previousMillis = currentMillis;
-    collisionDetect();
-    drawInit();
+  if (!isGameOver) {
+      // Dropper Çizgisi ve Topu
+      img.drawLine(dropperX, 20, dropperX, DEAD_LINE, 0x5A5A); 
+      img.fillCircle(dropperX, 25, BallRadius[nextBallScale], ballColors[nextBallScale]);
+      
+      // Sarı Süre Barı
+      if (inDanger) {
+         int barWidth = map(millis() - dangerStartTime, 0, 3000, 0, SCREEN_WIDTH);
+         img.fillRect(0, DEAD_LINE - 5, barWidth, 4, TFT_YELLOW);
+      }
   }
+
+  // Skor
+  img.setTextSize(1);
+  img.setTextColor(TFT_WHITE, 0x2104);
+  img.setCursor(5, 5);
+  img.printf("Skor: %d", score);
+
+  // Game Over Ekranı
+  if (isGameOver) {
+    img.fillRect(20, 100, 132, 60, TFT_WHITE);
+    img.drawRect(20, 100, 132, 60, TFT_RED);
+    img.setTextColor(TFT_RED, TFT_WHITE);
+    img.drawString("KAYBETTIN!", 86, 120);
+    img.drawString("Skor: " + String(score), 86, 140);
+  }
+
+  img.pushSprite(0, 0);
+}
+
+void loop() {
+  if (!isGameOver) {
+    // Kontroller
+    if (digitalRead(BTN_LEFT) == LOW) {
+      dropperX -= moveSpeed;
+      if (dropperX < 10) dropperX = 10;
+    }
+    if (digitalRead(BTN_RIGHT) == LOW) {
+      dropperX += moveSpeed;
+      if (dropperX > SCREEN_WIDTH - 10) dropperX = SCREEN_WIDTH - 10;
+    }
+    if (digitalRead(BTN_DROP) == LOW && canDrop) {
+      // Ufak bir rastgelelik (noise) ekle ki kule oluşmasın
+      float noise = random(-20, 20) / 10.0f; 
+      addBall(dropperX + noise, 25, nextBallScale);
+      nextBallScale = random(0, 5); // 0-4 arası rastgele boyut
+      canDrop = false;
+      lastDropTime = millis();
+    }
+    if (!canDrop && millis() - lastDropTime > 500) canDrop = true;
+    
+    checkGameOver();
+  }
+
+  // Fiziği artık sadece 1 kere çağırıyoruz, bu hızı 2 kat artırır.
+  updatePhysics(); 
+  
+  draw();
 }
