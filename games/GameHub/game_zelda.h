@@ -101,7 +101,7 @@ static uint8_t zWaterFrame   = 0;   // su animasyonu
 static uint8_t zWaterTimer   = 0;
 static int8_t  zFaceDir      = 0;   // 0=aşağı 1=sağ 2=sol 3=yukarı
 
-// 40x20 test dünya haritası (0=Çimen, 1=Ağaç, 2=Kaya, 3=Su, 4=Sandık, 5=Kum)
+// Dünya haritası
 static uint8_t worldMap[MAP_ROWS][MAP_COLS] = {
   {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
   {1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,1,3,3,3,3,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,4,1},
@@ -223,7 +223,7 @@ static void drawTile(int tileX, int tileY, int type) {
 
   switch (type) {
     case T_GRASS: {
-      // Checker-style varyasyon — pozisyona göre tile_grass veya tile_grass2
+
       bool alt = (tileX + tileY) % 4 == 0;
       if (alt)
         zFillTile(x, y, tile_grass2);  // Bush/ağaçlık varyant (üst üste çim)
@@ -232,24 +232,19 @@ static void drawTile(int tileX, int tileY, int type) {
       break;
     }
     case T_TREE:
-      // Ağaç: 2x2 tile olarak çiz (sol-üst)
       zFillTile(x, y, tile_tree_tl);
       break;
     case T_ROCK:
-      // Kaya sprite
       zFillTile(x, y, tile_rock);
       break;
     case T_WATER: {
-      // Animasyonlu su (3 kare)
       const uint16_t* wf = (zWaterFrame == 0) ? tile_water_a :
                            (zWaterFrame == 1) ? tile_water_b : tile_water_c;
       zFillTile(x, y, wf);
       break;
     }
     case T_CHEST:
-      // Zemin
       zFillTile(x, y, tile_grass);
-      // Sandık sprite (şeffaf)
       zDrawTile(x, y, spr_chest);
       break;
     case 9: // Açık sandık
@@ -271,24 +266,21 @@ static void drawPlayer() {
 
   if (player.isHurt && (millis() / 80) % 2 == 0) return;
 
-  // Kalkan aktifse çevre halkası
+
   if (player.shieldActive) {
     img.drawCircle(px + 8, py + 20, 13, COLOR_SHIELD);
     img.drawCircle(px + 8, py + 20, 12, 0x039F);
   }
 
-  // Yöne ve harekete göre sprite seç
   const uint16_t* sprite = char_down_1;
   bool flipH = false;
 
   if (player.isAttacking) {
-    // Saldırı sprite'ı — yöne göre
     if      (zFaceDir == 0) sprite = char_sword_down;
     else if (zFaceDir == 1) sprite = char_sword_side;
     else if (zFaceDir == 2) { sprite = char_sword_side; flipH = true; }
     else                     sprite = char_sword_up;
   } else {
-    // Yürüyüş animasyonu — kare: 0=dur, 1=adım1, 2=adım2, 3=adım1
     const uint16_t* frames[4][4] = {
       {char_down_1,  char_down_2,  char_down_3,  char_down_2},   // aşağı
       {char_side_1,  char_side_2,  char_side_3,  char_side_2},   // sağ
@@ -296,15 +288,11 @@ static void drawPlayer() {
       {char_up_1,    char_up_2,    char_up_3,    char_up_2},     // yukarı
     };
     sprite = frames[zFaceDir][zWalkFrame];
-    if (zFaceDir == 2) flipH = true;  // Sol -> ayna
+    if (zFaceDir == 2) flipH = true;
   }
 
   zDrawChar(px, py, sprite, flipH);
 
-  // Yön göstergesi (küçük ok) — isteğe bağlı debug
-  // float arrowX = px + 8 + cosf(player.angle) * 14;
-  // float arrowY = py + 20 + sinf(player.angle) * 14;
-  // img.fillCircle((int)arrowX, (int)arrowY, 2, TFT_RED);
 }
 
 static void drawEnemies() {
@@ -315,37 +303,28 @@ static void drawEnemies() {
 
     if (ex + 16 < 0 || ex >= VIEW_W || ey + 16 < 0 || ey >= VIEW_H) continue;
 
-    if (e.type == 0) { // Octorok — Kırmızı
-      // Gölge
+    if (e.type == 0) {
       img.fillEllipse(ex + 7, ey + 13, 6, 2, 0x18A3);
-      // Gövde — kırmızı yuvarlak canavar
       img.fillCircle(ex + 7, ey + 7, 6, 0xC000);
       img.fillCircle(ex + 7, ey + 6, 5, 0xE800);
-      // Gözler
       img.fillRect(ex + 4, ey + 5, 2, 2, TFT_WHITE);
       img.fillRect(ex + 9, ey + 5, 2, 2, TFT_WHITE);
       img.drawPixel(ex + 4, ey + 5, 0x0000);
       img.drawPixel(ex + 9, ey + 5, 0x0000);
-      // Tentaküller
       img.drawFastVLine(ex + 3, ey + 11, 3, 0xC000);
       img.drawFastVLine(ex + 7, ey + 12, 3, 0xC000);
       img.drawFastVLine(ex + 11, ey + 11, 3, 0xC000);
-      // Can barı
       img.fillRect(ex + 1, ey - 4, 14, 3, 0x4208);
       img.fillRect(ex + 1, ey - 4, (e.health * 7), 3, 0xF800);
-    } else { // Gel — Mavi jöle
-      // Gölge
+    } else {
       img.fillEllipse(ex + 7, ey + 13, 5, 2, 0x18A3);
-      // Jöle gövdesi — hafif animasyonlu (millis bazlı yaylanma)
       int bounce = (millis() / 200) % 2;
       img.fillRoundRect(ex + 2, ey + 3 + bounce, 10, 9 - bounce, 4, 0x03DF);
       img.fillRoundRect(ex + 3, ey + 4 + bounce, 8,  7 - bounce, 3, 0x1BFF);
-      // Gözler
       img.fillRect(ex + 3, ey + 5, 2, 2, TFT_WHITE);
       img.fillRect(ex + 8, ey + 5, 2, 2, TFT_WHITE);
       img.drawPixel(ex + 4, ey + 5, 0x0000);
       img.drawPixel(ex + 9, ey + 5, 0x0000);
-      // Can barı
       img.fillRect(ex + 1, ey - 4, 14, 3, 0x4208);
       img.fillRect(ex + 1, ey - 4, (e.health * 7), 3, 0x03DF);
     }
@@ -353,17 +332,14 @@ static void drawEnemies() {
 }
 
 static void drawHUD() {
-  // HUD Alt Bar (koyu transparan)
   img.fillRect(0, 154, 320, 16, 0x0841);
   img.drawFastHLine(0, 154, 320, 0x39E7);
 
-  // === KALPLAR (Sprite tabanlı, 11x11 küçültülmüş) ===
   int hx = 4;
   for (int i = 0; i < 3; i++) {
     const uint16_t* hspr = (i < player.health)    ? spr_heart_full  :
                            (i == player.health && player.health > 0 && player.health < 3) ? spr_heart_half :
                            spr_heart_empty;
-    // 16x16 sprite'i 11x11'e küçülterek çiz
     for (int y = 0; y < 11; y++) {
       for (int x = 0; x < 11; x++) {
         int sx = x * 16 / 11;
@@ -376,7 +352,6 @@ static void drawHUD() {
     hx += 13;
   }
 
-  // === YAKUT (Coin) ===
   img.fillCircle(48, 161, 4, COLOR_COIN);
   img.fillCircle(47, 160, 2, 0xFFE0);
   img.setTextFont(1); img.setTextSize(1);
@@ -384,15 +359,12 @@ static void drawHUD() {
   img.setCursor(55, 158);
   img.print(player.rubies);
 
-  // === İKSİRLER ===
-  // Küçük iksir ikonu
   img.fillRoundRect(86, 157, 7, 9, 2, COLOR_POTION);
   img.fillRect(87, 155, 5, 3, 0xC618);
   img.setTextColor(0xFFFF);
   img.setCursor(96, 158);
   img.print(player.healPotions);
 
-  // === DASH GÖSTERGESİ ===
   img.setTextColor(0x8410);
   img.setCursor(112, 158);
   img.print("DSH:");
@@ -402,7 +374,6 @@ static void drawHUD() {
   img.fillRect(136, 158, dashPct, 6, player.dashTimer > 0 ? 0xFFE0 : 0x07E0);
   img.drawRect(136, 158, 20, 6, 0x8410);
 
-  // === KALKAN GÖSTERGESI ===
   if (player.shieldActive) {
     img.fillRoundRect(162, 156, 28, 10, 2, 0x001F);
     img.setTextColor(TFT_WHITE);
@@ -410,11 +381,9 @@ static void drawHUD() {
     img.print("SHIELD");
   }
 
-  // === MINİ HARİTA (sağ taraf — 40x20 px) ===
-  int mx = 276, my = 155; // sol üst köşe
+  int mx = 276, my = 155;
   img.fillRect(mx, my, 40, 14, 0x0841);
   img.drawRect(mx-1, my-1, 42, 16, 0x39E7);
-  // Tile'ları 1x1 piksel olarak çiz (MAP_COLS=40, MAP_ROWS=20 -> sığdır)
   for (int r = 0; r < MAP_ROWS; r++) {
     int py2 = my + r * 14 / MAP_ROWS;
     for (int c = 0; c < MAP_COLS; c++) {
@@ -431,7 +400,6 @@ static void drawHUD() {
       img.drawPixel(px2, py2, mc);
     }
   }
-  // Oyuncu noktası (beyaz)
   int pmx = mx + (int)(player.x / TILE_SIZE);
   int pmy = my + (int)(player.y / TILE_SIZE) * 14 / MAP_ROWS;
   if (pmx >= mx && pmx < mx+40) img.fillRect(pmx-1, pmy, 3, 2, TFT_WHITE);
@@ -447,35 +415,34 @@ static void updateEnemies() {
     float dx = 0, dy = 0;
     float spd = (e.type == 0) ? 0.35f : 0.65f;
 
-    if (e.type == 0) { // Octorok — Belli sürelerde yön değiştirir (Serbest Açı)
+    if (e.type == 0) {
       if (e.moveTimer > 80) {
         e.angle = (float)(rand() % 360) * M_PI / 180.0f;
         e.moveTimer = 0;
       }
       dx = cosf(e.angle) * spd;
       dy = sinf(e.angle) * spd;
-    } else { // Gel — Oyuncuyu pürüzsüz açıyla direkt takip eder (Akıllı Takip)
+    } else {
       float diffX = player.x - e.x;
       float diffY = player.y - e.y;
       float dist = sqrtf(diffX*diffX + diffY*diffY);
       
-      if (dist < 130 && dist > 8) { // Algılama alanı
+      if (dist < 130 && dist > 8) {
         e.angle = atan2f(diffY, diffX);
         dx = cosf(e.angle) * spd;
         dy = sinf(e.angle) * spd;
       } else {
-        // Algılama dışındaysa durur/salınır
         dx = 0; dy = 0;
       }
     }
 
-    // Engel çarpışması kontrolü
+
     if (!zCheckCollision(e.x + dx, e.y + dy, 11, 11, hitX, hitY)) {
       e.x += dx;
       e.y += dy;
     } else {
       if (e.type == 0) {
-        e.angle = (float)(rand() % 360) * M_PI / 180.0f; // Duvara çarpınca seker
+        e.angle = (float)(rand() % 360) * M_PI / 180.0f;
       }
     }
 
@@ -483,18 +450,14 @@ static void updateEnemies() {
     float distX = player.x - e.x;
     float distY = player.y - e.y;
     if (abs(distX) < 9 && abs(distY) < 9 && !player.isHurt) {
-      // Eğer kalkan aktifse hasar almaz, düşman seker!
       if (player.shieldActive) {
-        // Düşmanı sertçe geri fırlat (Deflect)
         if (distX > 0) e.x -= 15; else e.x += 15;
         if (distY > 0) e.y -= 15; else e.y += 15;
         zSpawnParticles(e.x + 6, e.y + 6, COLOR_SHIELD, 3);
       } else {
-        // Hasar al
         player.health--;
         player.isHurt = true;
         player.hurtTimer = 40;
-        // Oyuncuyu geri fırlat (Knockback)
         if (distX > 0) player.x += 14; else player.x -= 14;
         if (distY > 0) player.y += 14; else player.y -= 14;
         zSpawnParticles(player.x + 5, player.y + 5, COLOR_HEART, 4);
@@ -515,11 +478,9 @@ static void updateAttack() {
     return;
   }
 
-  // Kılıcın ucunun dairesel hitbox alanı (Açıya göre hesaplanır)
   float sx = player.x + 6 + cosf(player.angle) * 12;
   float sy = player.y + 6 + sinf(player.angle) * 12;
 
-  // 1. Düşmanlara vuruş testi
   for (auto& e : enemies) {
     if (!e.active) continue;
     float dx = e.x + 6 - sx;
@@ -527,7 +488,6 @@ static void updateAttack() {
     float dist = sqrtf(dx*dx + dy*dy);
     if (dist < 14) {
       e.health--;
-      // Kılıç yönüne göre düşmanı geri fırlat
       e.x += cosf(player.angle) * 15;
       e.y += sinf(player.angle) * 15;
       zSpawnParticles(e.x + 6, e.y + 6, TFT_WHITE, 5);
@@ -542,21 +502,17 @@ static void updateAttack() {
 
 // ==================== Animasyon Güncelleme ====================
 static void updateAnimations(bool isMoving) {
-  // Su animasyonu (her 20 frame'de bir kare değiştir)
   zWaterTimer++;
   if (zWaterTimer >= 20) { zWaterTimer = 0; zWaterFrame = (zWaterFrame + 1) % 3; }
 
-  // Yürüme animasyonu (her 8 frame'de bir kare)
   if (isMoving) {
     zAnimTimer++;
     if (zAnimTimer >= 8) { zAnimTimer = 0; zWalkFrame = (zWalkFrame + 1) % 4; }
   } else {
-    zWalkFrame = 0;  // Durduğunda idle kare
+    zWalkFrame = 0;
     zAnimTimer = 0;
   }
 
-  // Yöne göre zFaceDir güncelle (açıdan tespit)
-  // 4 yön: aşağı(0), sağ(1), sol(2), yukarı(3)
   float a = player.angle;
   if      (a > 0.785f && a <= 2.356f)  zFaceDir = 0;  // Aşağı (PI/4 .. 3PI/4)
   else if (a > 2.356f && a <= 3.927f)  zFaceDir = 2;  // Sol (3PI/4 .. 5PI/4)
@@ -573,20 +529,17 @@ static void updatePlayer() {
 
   if (player.dashTimer > 0) player.dashTimer--;
 
-  // 1. SCROLL/ENCODER AÇI GÜNCELLEMESİ (Tıpkı convex_collision'daki gibi)
   static int zPrevCounter = 0;
   int currentCounter = zCounter;
   int delta = currentCounter - zPrevCounter;
   if (delta != 0) {
-    player.angle += delta * 0.18f; // Dönüş hızı
+    player.angle += delta * 0.18f;
     // Açı sınırla
     if (player.angle < 0) player.angle += 2.0f * M_PI;
     if (player.angle > 2.0f * M_PI) player.angle -= 2.0f * M_PI;
     zPrevCounter = currentCounter;
   }
 
-  // 2. COMBAT & INTERACT (SHOULDER BUTONLARI)
-  // R_SHOULDER -> Vurma / Saldırı
   if (digitalRead(2) == LOW && !player.isAttacking && !zBtnPressed_R) {
     player.isAttacking = true;
     player.attackTimer = 10;
@@ -594,10 +547,8 @@ static void updatePlayer() {
   }
   if (digitalRead(2) == HIGH) zBtnPressed_R = false;
 
-  // L_SHOULDER -> Etkileşim (Sandık Açma / Etkileşim)
   if (digitalRead(39) == LOW && !zBtnPressed_L) {
     zBtnPressed_L = true;
-    // Önümüzdeki sandığı bulma (Açma)
     float checkX = player.x + 6 + cosf(player.angle) * 12;
     float checkY = player.y + 6 + sinf(player.angle) * 12;
     int tc = (int)checkX / TILE_SIZE;
@@ -607,8 +558,6 @@ static void updatePlayer() {
         worldMap[tr][tc] = 9; // Sandık açıldı
         player.rubies += 20;
         zSpawnParticles(tc * TILE_SIZE + 8, tr * TILE_SIZE + 8, COLOR_COIN, 8);
-        
-        // Kazanma kontrolü
         bool anyChest = false;
         for(int y=0; y<MAP_ROWS; y++) {
           for(int x=0; x<MAP_COLS; x++) {
@@ -621,8 +570,6 @@ static void updatePlayer() {
   }
   if (digitalRead(39) == HIGH) zBtnPressed_L = false;
 
-  // 3. DİĞER YÖN BUTONLARI (FARKLI MEKANİKLER)
-  // up_btn (pin 4) -> Can potu içme
   if (digitalRead(4) == LOW && !zBtnPressed_U) {
     zBtnPressed_U = true;
     if (player.healPotions > 0 && player.health < 3) {
@@ -633,7 +580,6 @@ static void updatePlayer() {
   }
   if (digitalRead(4) == HIGH) zBtnPressed_U = false;
 
-  // dwn_btn (pin 3) -> Dash / Hız Atılması
   if (digitalRead(3) == LOW && !zBtnPressed_D && player.dashTimer == 0) {
     zBtnPressed_D = true;
     player.dashTimer = 30; // 30 frame hızlı hareket
@@ -641,16 +587,13 @@ static void updatePlayer() {
   }
   if (digitalRead(3) == HIGH) zBtnPressed_D = false;
 
-  // lft_btn (pin 5) -> Kalkan Aktif Etme (Basılı tutulduğu sürece)
   player.shieldActive = (digitalRead(5) == LOW);
 
-  // 4. YÜRÜME (SAĞ BUTON - rgh_btn - pin 1)
   float dx = 0, dy = 0;
   bool isMoving = false;
   if (digitalRead(1) == LOW && !player.isAttacking) {
     float spd = player.dashTimer > 0 ? 2.6f : 1.2f;
-    if (player.shieldActive) spd *= 0.5f; // Kalkan açıkken yavaş yürür
-    // Kum tile üzerindeyse yavaşla
+    if (player.shieldActive) spd *= 0.5f;
     int curTileX = (int)(player.x + 5) / TILE_SIZE;
     int curTileY = (int)(player.y + 5) / TILE_SIZE;
     if (curTileX >= 0 && curTileX < MAP_COLS && curTileY >= 0 && curTileY < MAP_ROWS)
@@ -660,17 +603,14 @@ static void updatePlayer() {
     isMoving = true;
   }
 
-  // Animasyonları güncelle
   updateAnimations(isMoving);
 
-  // Çarpışma kutuları kontrolüyle yürüme
   int hitX, hitY;
   if (dx != 0 || dy != 0) {
     if (!zCheckCollision(player.x + dx, player.y + dy, 10, 10, hitX, hitY)) {
       player.x += dx;
       player.y += dy;
     } else {
-      // Duvar boyunca kayma desteği (SAT mantığına benzer pürüzsüz kaydırma)
       if (!zCheckCollision(player.x + dx, player.y, 10, 10, hitX, hitY)) {
         player.x += dx;
       } else if (!zCheckCollision(player.x, player.y + dy, 10, 10, hitX, hitY)) {
@@ -679,13 +619,11 @@ static void updatePlayer() {
     }
   }
 
-  // Haritada tut
   if (player.x < TILE_SIZE) player.x = TILE_SIZE;
   if (player.x > (MAP_COLS - 2) * TILE_SIZE) player.x = (MAP_COLS - 2) * TILE_SIZE;
   if (player.y < TILE_SIZE) player.y = TILE_SIZE;
   if (player.y > (MAP_ROWS - 2) * TILE_SIZE) player.y = (MAP_ROWS - 2) * TILE_SIZE;
 
-  // Kamera Takip Scroll
   camX = (int)player.x - VIEW_W / 2;
   camY = (int)player.y - VIEW_H / 2;
 

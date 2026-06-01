@@ -250,19 +250,12 @@ static void canMove(){
 }
 
 static void drawMaze(){
-  // ── Hizalama analizi ──────────────────────────────────────────────
-  // bmatrix[32][29]: row*6+70  → row0=y70, row31=y256  (32 satır)
-  // coin_matrix[31][30]: row*6+76 → row0=y76, row30=y256  (31 satır)
-  // İkisi y=256'da biter. bmatrix 6px (1 hücre) YUKARIDAN başlar:
-  // bmatrix[0] = dış üst duvar çerçevesi (coin matrisinde karşılık yok)
-  // bmatrix[1] ↔ coin[0] hizasında → y76. Bu kasıtlı orijinal tasarım.
-  // ─────────────────────────────────────────────────────────────────
   for(int row=0;row<PC_MATRIX_ROWS;row++) for(int col=0;col<PC_MATRIX_COLS;col++){
-    px=col*CELL_SIZE-2; py_=row*CELL_SIZE+70;  // orijinal: +70
+    px=col*CELL_SIZE-2; py_=row*CELL_SIZE+70;
     img.fillRect(px,py_,CELL_SIZE,CELL_SIZE,(PC_bmatrix[row][col]==1)?COLOR_1:COLOR_0);
   }
   for(int row=0;row<PC_coin_rows;row++) for(int col=0;col<PC_coin_cols;col++){
-    px=col*CELL_SIZE+yPadding; py_=row*CELL_SIZE+xPadding;  // xPadding=76
+    px=col*CELL_SIZE+yPadding; py_=row*CELL_SIZE+xPadding;
     if(PC_coin_matrix[row][col]==1)      img.drawPixel(px,py_,pacmanColor);
     else if(PC_coin_matrix[row][col]==2) img.fillCircle(px,py_,3,TFT_WHITE);
   }
