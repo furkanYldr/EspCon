@@ -1,6 +1,6 @@
-
-
 #include "tabs.h"
+#include "pacman.h"
+#include "resource.h"
 
 
 gameStateEnum gameState = start;
@@ -37,23 +37,112 @@ void startTAB() {
 }
 
 void gameOverTAB() {
-img.fillSprite(TFT_BLACK);
-    //drawMaze();
-    img.setCursor(15, 20);
-    img.setTextSize(3);
-    img.setTextColor(TFT_RED);
-    img.print("GAMEOVER");
-    img.setTextColor(TFT_WHITE);
-    img.setCursor( 55, 140 );
-    img.setTextSize(1);
-    img.print(score);
-    img.fillRoundRect(48, 188, 74, 24, 7, TFT_YELLOW);
-    img.fillRoundRect(50, 190, 70, 20, 5, 0x2C38);
-    img.setCursor(55, 195);
-    img.setTextSize(1);
-    img.print(" TRY AGAIN ");
-    img.pushSprite(0,0);
-    
+  img.fillSprite(TFT_BLACK);
+
+  // Başlık — kırmızı
+  img.setTextSize(3);
+  img.setTextColor(TFT_RED);
+  img.setCursor(8, 20);
+  img.print("GAME OVER");
+
+  // Skor
+  img.setTextSize(2);
+  img.setTextColor(TFT_YELLOW);
+  img.setCursor(35, 70);
+  img.print("Score");
+  img.setCursor(55, 95);
+  img.setTextColor(TFT_WHITE);
+  img.print(score);
+
+  // TRY AGAIN butonu
+  img.fillRoundRect(38, 150, 96, 28, 7, TFT_RED);
+  img.fillRoundRect(40, 152, 92, 24, 5, 0x6000);
+  img.setCursor(44, 160);
+  img.setTextSize(1);
+  img.setTextColor(TFT_WHITE);
+  img.print(" TRY AGAIN");
+
+  img.pushSprite(0, 0);
+
+  // SELECT ile yeniden başlat
+  if (digitalRead(select_btn) == LOW) {
+    delay(200);  // debounce
+    // Tam sıfırlama
+    score       = 0;
+    health      = 3;
+    timer       = 0;
+    prevTimer   = 0;
+    STATETimer  = 0;
+    prevScore   = 0;
+    countDown   = 4;
+    frightenedCountDown = 0;
+    ghostINKY   = false;
+    ghostCLYDE  = false;
+    resetCoinMatrix();
+    setGameStart();
+    gameState = game;
+  }
+}
+
+void winTAB() {
+  img.fillSprite(TFT_BLACK);
+
+  // Başlık — sarı parlak
+  img.setTextSize(2);
+  img.setTextColor(TFT_YELLOW);
+  img.setCursor(22, 20);
+  img.print("YOU WIN!");
+
+  // Skor
+  img.setTextSize(1);
+  img.setTextColor(TFT_WHITE);
+  img.setCursor(35, 60);
+  img.print("Final Score:");
+  img.setTextSize(2);
+  img.setTextColor(TFT_YELLOW);
+  img.setCursor(45, 78);
+  img.print(score);
+
+  // Hayaletleri küçük ikon olarak sırala (frightened renginde)
+  for (int i = 0; i < 4; i++) {
+    for (int row = 0; row < 10; row++) {
+      for (int col = 0; col < 10; col++) {
+        if (ghost[row][col] == 1) {
+          img.drawPixel(col + 20 + i * 35, row + 115, frightened);
+        } else if (ghost[row][col] == 2) {
+          img.drawPixel(col + 20 + i * 35, row + 115, TFT_WHITE);
+        }
+      }
+    }
+  }
+
+  // PLAY AGAIN butonu
+  img.fillRoundRect(38, 150, 96, 28, 7, TFT_YELLOW);
+  img.fillRoundRect(40, 152, 92, 24, 5, 0x2C38);
+  img.setCursor(40, 160);
+  img.setTextSize(1);
+  img.setTextColor(TFT_WHITE);
+  img.print("  PLAY AGAIN");
+
+  img.pushSprite(0, 0);
+
+  // SELECT ile yeni oyun
+  if (digitalRead(select_btn) == LOW) {
+    delay(200);
+    score       = 0;
+    health      = 3;
+    timer       = 0;
+    prevTimer   = 0;
+    STATETimer  = 0;
+    prevScore   = 0;
+    countDown   = 4;
+    frightenedCountDown = 0;
+    ghostINKY   = false;
+    ghostCLYDE  = false;
+    resetCoinMatrix();
+    setGameStart();
+    gameState = game;
+  }
 }
 
 void startAnim() {

@@ -3,8 +3,11 @@
 #include <TFT_eSPI.h>
 #include <vector>
 #include <algorithm>
-#include <random>
 #include <Arduino.h>
+
+// forward decl for particle burst (colorCode.cpp'den)
+extern void cpBurst(float cx, float cy);
+extern void cpSpawn(float ox, float oy, uint16_t col, float vxr, float vyb, int n);
 
 extern TFT_eSPI tft;
 extern TFT_eSprite img;
@@ -118,63 +121,68 @@ void selectionBlock(int index ,bool selected, bool drop) {
   }
 }
 
-void correctOrderCount(bool button  , int index) {
-
-
-
-
+void correctOrderCount(bool button, int index) {
   if (button) {
-
     correct = 0;
-
+    bool allFilled = true;
     for (sBlock player : vecPlayer) {
-      for (sBlock gameOrder : vecGameOrder) {
-        if (player.id != 0) {
-          if (player.order == gameOrder.order && player.id == gameOrder.id) {
-            correct++;
-          }
-        } else {
-          img.setTextSize(1);
-          img.setCursor(10, 75);
-          img.fillRect(0, 70, 320, 30, TFT_RED);
-          img.print("Please fill all the blocks before proceeding.");
-        }
-      }
+      if (player.id == 0) { allFilled = false; break; }
+    }
+    if (!allFilled) {
+      // Dolu değil — kırmızı flash
+      img.fillRect(0, 70, 320, 28, 0x6000);
+      img.drawRect(0, 70, 320, 28, TFT_RED);
+      img.setTextFont(1); img.setTextColor(TFT_WHITE);
+      img.setCursor(8, 78); img.print("Fill all blocks first!");
+      cpBurst(160, 85);
+      return;
+    }
+    for (sBlock player : vecPlayer)
+      for (sBlock gameOrder : vecGameOrder)
+        if (player.order == gameOrder.order && player.id == gameOrder.id) correct++;
+
+    if (correct < 6) {
+      // Yanlış — kırmızı patlama
+      cpBurst(160, 100);
     }
   }
-  img.setTextSize(2);
-  img.setCursor(20, 120);
-  img.print("matches:");
-  img.print(correct);
+
+  // Renkli nokta göstergesi (6 nokta: yeşil=match, gri=no)
+  img.fillRect(0, 120, 320, 24, 0x18C3);
+  img.setTextFont(1); img.setTextColor(0x8C71);
+  img.setCursor(8, 126); img.print("matches:");
+  for (int d = 0; d < 6; d++) {
+    uint16_t dc = (d < correct) ? 0x07E0 : 0x39E7;
+    img.fillCircle(85 + d * 22, 132, 8, dc);
+    img.drawCircle(85 + d * 22, 132, 8, TFT_WHITE);
+  }
 
   if (correct == 6) {
-          img.setTextSize(2);
-          img.setCursor(10, 75);
-          img.fillRect(0, 70, 320, 30, LIGHT_GREEN);
-          img.print(index);
-          img.print(". Level Clear ");
-          clearedLevel.push_back(index);
+    img.fillRect(0, 70, 320, 44, 0x0320);
+    img.drawRect(0, 70, 320, 44, 0x07E0);
+    img.setTextFont(2); img.setTextColor(0x07E0);
+    img.setCursor(8, 76); img.print(index); img.print(". Level Clear!");
+    img.setTextFont(1); img.setTextColor(TFT_WHITE);
+    img.setCursor(8, 98); img.print("Press BACK for next level");
+    // Konfeti
+    cpBurst(80,  50);
+    cpBurst(240, 50);
+    cpSpawn(160, 0, TFT_YELLOW, 2.0f, 1.0f, 6);
+    // Sadece bir kez ekle
+    bool already = false;
+    for (int x : clearedLevel) if (x == index) { already = true; break; }
+    if (!already) clearedLevel.push_back(index);
   }
 }
 void shuffleORDER() {
   vecGameOrder = vecBlocks;
-  mt19937 g(rd());
-
-  // Vektörü karıştır
-  shuffle(vecGameOrder.begin(), vecGameOrder.end(), g);
-
-  // Sıraları güncelle
+  // Basit Fisher-Yates karıştırma (random_device yerine rand())
+  for (int i = (int)vecGameOrder.size() - 1; i > 0; i--) {
+    int j = rand() % (i + 1);
+    swap(vecGameOrder[i], vecGameOrder[j]);
+  }
   int currOrder = 1;
-  for (sBlock& block : vecGameOrder) {
-    block.order = currOrder;
-    currOrder++;
-  }
-  for (const sBlock& block : vecGameOrder) {
-    Serial.print("Color: ");
-    Serial.print(block.id);
-    Serial.print("   ");
-    Serial.println(block.order);
-  }
+  for (sBlock& block : vecGameOrder) block.order = currOrder++;
 }
 
 

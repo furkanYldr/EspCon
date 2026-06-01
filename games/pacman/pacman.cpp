@@ -55,6 +55,9 @@ void drawInit() {
   img.setTextColor(TFT_YELLOW);
   img.print("PAC-MAN");
   drawMaze();
+  if (fruitVisible) {
+    drawFruit();
+  }
   drawBlinky();
   switch (pacman.ANIM) {
     case ALEFT:
@@ -87,7 +90,6 @@ void drawInit() {
 void gameSetup() {
 
   if (CATCH) {
-    Serial.println("çalışıyor catch ");
     if (health >= 1) {
       health--;
       CATCH = false;
@@ -96,33 +98,48 @@ void gameSetup() {
       gameState = gameOver;
     }
   }
+
+  // Meyve toplama: pac-man cherry'ye (75,275) yaklaşınca topla
+  if (fruitVisible) {
+    int dx = pacman.px - 75;
+    int dy = pacman.py - 275;
+    if ((dx * dx + dy * dy) < 100) {  // ~10px yarıçap
+      score += 100;
+      fruitVisible = false;
+      fruitEaten++;
+    }
+  }
 }
 void ghostStateManager() {
 
+  // STATETimer döngüsü: 0-6 scatter, 7-13 chase, 14-19 scatter, 20+ -> sıfırla
+  if (STATETimer >= 20) {
+    STATETimer = 0;
+  }
+
   for (STRUCTGHOST& ghost : vecGHOST) {
-    
-    if (ghost.STATE != FRIGHTENED && ghost.STATE !=EATEN) {
-      Serial.println(".alışıyorum ghostmanager");
-      if (STATETimer < 7 || (STATETimer < 20 && STATETimer > 14)) {
 
-        ghost.STATE = SCATTER;
-      } else {
-        ghost.STATE = CHASE;
-      }
-    }
-     else if (ghost.STATE == FRIGHTENED && ghost.STATE !=EATEN ) {
-      if (frightenedCountDown > 0) {
-        if (timer > prevTimer) {
-          frightenedCountDown--;
-        }
-      } else if (frightenedCountDown == 0) {
-        ghost.STATE = SCATTER;
-        if(strike > 0 ){
-          strike = 0 ;
+    // FRIGHTENED ve EATEN state'leri bu fonksiyondan etkilenmiyor
+    if (ghost.STATE == FRIGHTENED || ghost.STATE == EATEN) {
+
+      if (ghost.STATE == FRIGHTENED) {
+        // frightenedCountDown timer tarafından azaltılıyor (her saniye)
+        if (frightenedCountDown <= 0) {
+          ghost.STATE = SCATTER;
+          if (strike > 0) {
+            strike = 0;
+          }
         }
       }
+      continue;  // EATEN ghost'ları hiçbir zaman buradan değiştirme
     }
 
+    // Normal scatter/chase döngüsü
+    if (STATETimer < 7 || (STATETimer >= 14 && STATETimer < 20)) {
+      ghost.STATE = SCATTER;
+    } else {
+      ghost.STATE = CHASE;
+    }
   }
 }
 void setGameStart() {
@@ -422,9 +439,21 @@ void buttonControl() {
 
 
 
+// Kazanma koşulu: tüm normal coin (1) ve power-up (2) toplandı mı?
+void checkWin() {
+  for (int r = 0; r < coin_rows; r++) {
+    for (int col = 0; col < coin_collums; col++) {
+      if (coin_matrix[r][col] == 1 || coin_matrix[r][col] == 2) {
+        return;  // Henüz bitmedi
+      }
+    }
+  }
+  gameState = win;
+}
+
 void collectFood(int row, int col) {
-  if (coin_matrix[row][col] == 1) { // Normal coin toplama
-    coin_matrix[row][col] = 3;  // Coin toplandı olarak işaretle
+  if (coin_matrix[row][col] == 1) {  // Normal coin toplama
+    coin_matrix[row][col] = 3;       // Coin toplandı olarak işaretle
     score++;
     if (score > prevScore) {
       if (c < 40) {
@@ -438,20 +467,24 @@ void collectFood(int row, int col) {
         ghostCLYDE = true;
         c++;
       }
+      // 70 coin toplanınca meyve çıkar (level başına 1 kez)
+      if (score == 70 && fruitEaten == 0) {
+        fruitVisible = true;
+      }
     }
     prevScore = score;
-  } 
-  else if (coin_matrix[row][col] == 2) { // Power-up toplama
-    if (coin_matrix[row][col] != 3) {  
-    
-      coin_matrix[row][col] = 3; 
-      Serial.print("freak fruit eaten row = ");
-      Serial.println(coin_matrix[row][col]);
-      score += 20;
-      getFreak();
-      frightenedCountDown = 25;
-      goBack = true;
-    }
+    checkWin();
+  } else if (coin_matrix[row][col] == 2) {  // Power-up toplama
+    coin_matrix[row][col] = 3;
+    score += 20;
+    getFreak();
+    frightenedCountDown = 7;  // 7 saniye FRIGHTENED
+    goBack = true;
+  } else if (coin_matrix[row][col] == 4) {  // Meyve toplama
+    coin_matrix[row][col] = 3;
+    score += 100;
+    fruitVisible = false;
+    fruitEaten++;
   }
 }
 
@@ -548,6 +581,10 @@ void pacmanUpdate() {
         prevTimer = timer;
         timer++;
         STATETimer++;
+        // FRIGHTENED geri sayım — her saniye 1 azalt
+        if (frightenedCountDown > 0) {
+          frightenedCountDown--;
+        }
         ghostStateManager();
         spawnGhost();
       }
@@ -586,6 +623,8 @@ void pacmanUpdate() {
     img.pushSprite(0, 0);
   } else if (gameState == gameOver) {
     gameOverTAB();
+  } else if (gameState == win) {
+    winTAB();
   }
 }
 

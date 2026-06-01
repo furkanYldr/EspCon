@@ -3,22 +3,13 @@
 
 #include <TFT_eSPI.h>
 #include <Arduino.h>
-#include "resource.h"
 
-// --- Oyun Durumları ---
-enum GameStates {
-  start,      // Başlangıç ekranı
-  game,       // Oyun oynanıyor
-  gameOver,   // Kaybettin
-  win         // Kazandın
-};
-
-// --- Global Değişkenler (Extern) ---
-extern TFT_eSPI tft;
+extern TFT_eSPI    tft;
 extern TFT_eSprite img;
-extern int gameState;
 
-// --- Fonksiyon Prototipleri ---
+enum MineState { MS_MAP_SELECT, MS_START, MS_GAME, MS_GAMEOVER, MS_WIN };
+extern MineState gameState;
+
 void mineSetup();
 void mineUpdate();
 

@@ -125,23 +125,49 @@ return false;
 
 }
 void snakeSetup() {
+  Serial.begin(115200);
+  delay(2000);
 
+  Serial.println("1 - snakeSetup basladi");
 
-  tft.init();
-  tft.setRotation(4);
   pinMode(bck_btn, INPUT_PULLUP);
   pinMode(lft_btn, INPUT_PULLUP);
   pinMode(rgh_btn, INPUT_PULLUP);
   pinMode(up_btn, INPUT_PULLUP);
   pinMode(dwn_btn, INPUT_PULLUP);
-  tft.fillScreen(0x0130);
-  img.createSprite(172, 320);
-  memset(Area, 0, sizeof(Area));
-  snake.push_back({ 7, 15 });
-  food = generateFood();  
-  img.pushSprite(0, 0);
-}
+  pinMode(select_btn, INPUT_PULLUP);
 
+  pinMode(PIN_IN1, INPUT_PULLUP);
+  pinMode(PIN_IN2, INPUT_PULLUP);
+
+  Serial.println("2 - pinler tamam");
+
+  memset(Area, 0, sizeof(Area));
+
+  snake.clear();
+  snake.push_back({ 7, 15 });
+
+  food = generateFood();
+
+  Serial.println("3 - snake hazir");
+
+  // TFT TEST
+  Serial.println("4 - tft init oncesi");
+  tft.init();
+  Serial.println("5 - tft init sonrasi");
+
+  tft.setRotation(0);
+  Serial.println("6 - rotation sonrasi");
+
+  tft.fillScreen(TFT_BLACK);
+  Serial.println("7 - fillScreen sonrasi");
+
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.setCursor(10, 10);
+  tft.println("SNAKE TEST");
+
+  Serial.println("8 - snakeSetup bitti");
+}
 
 void snakeUpdate() {
 

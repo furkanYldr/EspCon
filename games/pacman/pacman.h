@@ -40,11 +40,13 @@ void pacmanUpdate();
 void addGhost(int col);
 void drawInit();
 void drawMaze();
+void drawFruit();
 void drawPacman(uint8_t matrix[10][10]);
 void canMove();
 void pacMOVEMENT();
 void alignToGrid();
 void collectFood(int row, int col);
+void checkWin();
 void monitorMemory();
 void healthTracker();
 void gameSetup();
@@ -61,9 +63,14 @@ extern const int xPadding, yPadding;
 extern int score;
 extern int ghostAnim;
 
-extern bool ghostCLYDE ;
+extern bool ghostCLYDE;
 extern bool ghostINKY;
-extern  bool CATCH;
+extern bool CATCH;
 extern int timer, prevTimer;
+extern int health;
+extern int STATETimer;
+extern int countDown;
+extern int frightenedCountDown;
+extern int prevScore;
 
 #endif  // PACMAN_H

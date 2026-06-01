@@ -337,7 +337,18 @@ void drawBlinky() {
         y = row + ghostR.py;
 
         if (matrix[row][col] == 1 && !(ghostR.STATE == EATEN)) {
-          img.drawPixel(x, y, ghostR.STATE == FRIGHTENED ? frightened : ghostR.color);
+          uint16_t drawColor;
+          if (ghostR.STATE == FRIGHTENED) {
+            // Son 2 saniyede yanıp sön (250ms aralıklarla beyaz/frightened)
+            if (frightenedCountDown <= 2 && (millis() / 250) % 2 == 0) {
+              drawColor = TFT_WHITE;
+            } else {
+              drawColor = frightened;
+            }
+          } else {
+            drawColor = ghostR.color;
+          }
+          img.drawPixel(x, y, drawColor);
         } else if (matrix[row][col] == 2) {
           img.drawPixel(x, y, TFT_WHITE);
         } else if (matrix[row][col] == 3) {

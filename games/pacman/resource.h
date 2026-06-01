@@ -54,6 +54,12 @@ extern uint8_t ghost3[10][10];
 // FRUİTS
 extern uint8_t cherry[10][11];
 
+// RESET
+void resetCoinMatrix();
+
+// Meyve durumu
+extern bool fruitVisible;
+extern int fruitEaten;
 
 
 #endif
