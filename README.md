@@ -1,78 +1,111 @@
-
-
+# EspCon — ESP32 Retro Game Console
 
 ## About the Project
 
-This project aims to bring a portable gaming experience powered by the **ESP32** microcontroller. The console is built using custom hardware and software solutions designed to run retro-style games. The project merges modern technology with nostalgic gaming, creating a low-cost, compact, and portable gaming device.
+This project brings a portable gaming experience powered by the **ESP32-S3** microcontroller. The console is built with custom hardware and software solutions designed to run retro-style games. It merges modern technology with nostalgic gaming into a low-cost, compact, and portable device.
 
 ## Features
 
-An open-source platform for casual and retro games powered by the ESP32-S3. The project’s goal is to create a device that offers a fast, short, and enjoyable gaming experience, perfect for one-handed use. Ideal for playing during commutes, while waiting in line, or sipping coffee. The device includes a 1.9-inch screen, 4-directional buttons, 3 function buttons, and a scroll that acts as a trigger when held sideways, allowing easy navigation between menus and enhancing the gaming experience (for example, in the ColorCode game).
+An open-source platform for casual and retro games powered by the ESP32-S3. The goal is to create a device that offers a fast, short, and enjoyable gaming experience — perfect for one-handed use. Ideal for playing during commutes, while waiting in line, or sipping coffee.
 
-This platform focuses on re-creations of retro games, made without any game engine—just C++ and an additional graphics library. In the future, I plan to create a game engine where scene management can be done with simple code, using the mechanics collected from these games. If you're interested in contributing or collaborating, feel free to reach out!
-### Device
-<img src="./images/device.jpg" width="300"/>
+The device includes:
+- **1.9-inch TFT screen**
+- **4-directional buttons**
+- **3 function buttons**
+- **Rotary scroll encoder** — acts as a trigger when held sideways, used for menu navigation and in-game mechanics (e.g. aiming in ColorCode)
+
+This platform focuses on re-creations of retro games built **without any game engine** — just C++ and a graphics library (TFT_eSPI). In the future, I plan to create a lightweight game engine where scene management can be done with simple code, reusing the mechanics collected from these games.
+
+> If you're interested in contributing or collaborating, feel free to reach out!
+
+---
+
+## Device Photos
+
+<p align="center">
+  <img src="./images/1.jpeg" width="220"/>
+  <img src="./images/2.jpeg" width="220"/>
+</p>
+<p align="center">
+  <img src="./images/3.jpeg" width="220"/>
+  <img src="./images/4.jpeg" width="220"/>
+</p>
+
+---
+
 ## Setup
 
 ### Required Software
 
-- **Arduino IDE**: I recommend using the Arduino IDE to program the ESP32.
-- **ESP32 Board Support**: Follow the [ESP32 Arduino Setup Guide](https://github.com/espressif/arduino-esp32) to add ESP32 board support to the Arduino IDE.
+- **Arduino IDE** — recommended for programming the ESP32
+- **ESP32 Board Support** — follow the [ESP32 Arduino Setup Guide](https://github.com/espressif/arduino-esp32)
+- **TFT_eSPI Library** — graphics library (driver files included in `/drivers`)
 
 ### Connection and Upload
 
+I will share the circuit diagram after finalizing the optimal hardware layout. Currently using the **LilyGO T-Display S3**. I am testing different combinations of boards, screens, and chips. Once resolved, I'll share the final version along with a **3D-printable STL shell**.
 
-I will share the circuit diagram after creating an optimal solution. Currently, I am using the LilyGO T-Display S3 in the device. I am testing different setups by combining separate boards, screens, and chips. Once I resolve the issues, I will share the final version along with a suitable shell as an STL file for 3dprint .
-For now, you need to check the pin connections in the game code for each game individually to test them. Stay tuned! 🚀
+For now, check the pin definitions in `games/GameHub/pins.h` for the correct wiring. Stay tuned! 🚀
 
-## Usage
+---
 
-The console features a simple menu with several retro games. Use the buttons to select and play the games. The console will provide basic instructions at the start of each game.
+## GameHub System
 
-### Games
+All games are unified under a single **GameHub** sketch (`games/GameHub/GameHub.ino`). The hub provides a central menu, game switching, and shared hardware access. Each game lives in its own header file (`game_zelda.h`, `game_pacman.h`, etc.) inside a C++ namespace.
+
+---
+
 ## Game List
 
+| **Game**        | **Status**              | **Description**                                      |
+|-----------------|-------------------------|------------------------------------------------------|
+| 🟡 Pac-Man      | In Progress (85%)       | Classic maze game, reverse engineered from scratch.  |
+| 🟩 Zelda        | In Progress (70%)       | Open-world adventure with sprites, enemies, and map. |
+| 🎨 ColorCode    | In Progress (60%)       | Minecraft-inspired 2D color-match game port.         |
+| 🎱 8-Pool       | Collision Complete      | 8-ball billiards with convex collision physics.      |
+| 🐦 Flappy Ball  | Completed               | Simple Flappy Bird clone.                            |
+| 🐍 Snake        | Completed               | The timeless snake game.                             |
+| 🧱 Tetris       | Completed               | Classic block-stacking puzzle game.                  |
+| 💣 Minesweeper  | Completed               | Classic grid-based mine-finding game.                |
+| 🎳 Pinball      | In Progress             | Pinball simulation.                                  |
+| 🌌 Space Inv.   | Planned                 | Retro space shooter, under development.              |
+| 🍎 FruitMerge   | Needs Optimization      | Merge fruits to score points.                        |
 
-| **Game Name**   | **Status**              | **Description**                          |
-|-----------------|-------------------------|------------------------------------------|
-| Flappy Ball     | Completed               | Simple Flappy Bird clone.               |
-| Pac-Man         | In Progress (80%)       | Classic maze game, reverse engineered.  |
-| ColorCode       | In Progress (60%)       | Minecraft color match game port (2D).   |
-| 8pool           | Collision Complete      | 8-ball billiards simulation.            |
-| FruitMerge      | Needs Huge Optimization | Merge fruits to score points.           |
-| Space Invaders  | In Progress             | A retro space shooter, under development.|
-| Breakout        | Planned                 | Brick-breaking game, will be added later. |
-| Tetris          | Planned                 | Classic puzzle game, to be added soon.  |
-| Snake           | Planned                 | The timeless snake game.                |
-### Pacman 
-<img src="./images/pacman.jpg" width="300"/>
-<img src="./images/pacman1.jpg" width="300"/>
+---
 
-<img src="https://github.com/furkanYldr/EspCon/blob/main/images/pacman.gif" width="300"/>
+## Screenshots & GIFs
 
-### ColorCode 
+### Pac-Man
+<p>
+  <img src="./images/pacman.jpg" width="220"/>
+  <img src="./images/pacman1.jpg" width="220"/>
+</p>
+<img src="https://github.com/furkanYldr/EspCon/blob/main/images/pacman.GIF" width="300"/>
 
+### ColorCode
 <img src="https://github.com/furkanYldr/EspCon/blob/main/images/colorCode.gif" width="300"/>
 
-### FlappyBall
-
+### Flappy Ball
 <img src="https://github.com/furkanYldr/EspCon/blob/main/images/flappyball.GIF" width="200"/>
 
-### 8pool (in progress)
-
+### 8-Pool
 <img src="https://github.com/furkanYldr/EspCon/blob/main/images/8pool.GIF" width="200"/>
+
+---
 
 ## Contributing
 
-If you would like to contribute to this project, follow these steps:
+1. **Fork** the repository
+2. Create a new **branch**
+3. Make your changes and **commit** them
+4. **Submit a pull request**
 
-1. **Fork** the project.
-2. Create a new **branch**.
-3. Make your changes and **commit** them.
-4. **Submit a pull request**.
-
+---
 
 ## Contact
 
-For any questions or feedback regarding the project, feel free to [contact me](mailto:furkanYildirir00@gmail.com).
- add some physics element to esp32-s3
+For questions or feedback: [furkanYildirir00@gmail.com](mailto:furkanYildirir00@gmail.com)
+
+---
+
+*Built with ❤️ on ESP32-S3 — no game engine, just C++*
